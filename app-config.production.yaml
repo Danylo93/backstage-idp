@@ -1,0 +1,51 @@
+app:
+  baseUrl: ${APP_BASE_URL}
+
+backend:
+  baseUrl: ${BACKEND_BASE_URL}
+  listen: ':7007'
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: ${POSTGRES_DB}
+
+techdocs:
+  builder: external
+  publisher:
+    type: azureBlobStorage
+    azureBlobStorage:
+      containerName: ${TECHDOCS_AZURE_CONTAINER_NAME}
+      connectionString: ${TECHDOCS_AZURE_CONNECTION_STRING}
+  cache:
+    ttl: 15m
+
+auth:
+  providers:
+    guest: {}
+
+catalog:
+  locations:
+    - type: file
+      target: ../../catalog-info.yaml
+    - type: file
+      target: ../../catalog/all.yaml
+    - type: file
+      target: ../../catalog/org.yaml
+      rules:
+        - allow: [User, Group]
+    - type: file
+      target: ../../templates/java-service/template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../templates/dotnet-service/template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../templates/python-service/template.yaml
+      rules:
+        - allow: [Template]

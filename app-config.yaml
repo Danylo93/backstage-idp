@@ -1,0 +1,126 @@
+app:
+  title: SHIELD Platform
+  baseUrl: http://localhost:3000
+
+organization:
+  name: SHIELD Platform
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  auth:
+    keys:
+      - secret: local-dev-secret
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+  reading:
+    allow:
+      - host: raw.githubusercontent.com
+      - host: dev.azure.com
+
+integrations:
+  azure:
+    - host: dev.azure.com
+      token: ${AZURE_DEVOPS_PAT}
+
+proxy:
+  endpoints: {}
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'docker'
+  publisher:
+    type: 'local'
+
+auth:
+  environment: development
+  providers:
+    guest:
+      userEntityRef: user:default/danylo
+      ownershipEntityRefs:
+        - user:default/danylo
+        - group:default/devops-team
+        - group:default/shield-admins
+      dangerouslyAllowOutsideDevelopment: true
+
+scaffolder:
+  defaultAuthor:
+    name: ArgoIT Devops
+    email: devopsacesso@useargo.com
+  defaultCommitMessage: 'chore(scaffolder): bootstrap from SHIELD template'
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, Domain, API, Resource, Location, Template, User, Group]
+  locations:
+    - type: file
+      target: ../../catalog-info.yaml
+    - type: file
+      target: ../../catalog/all.yaml
+    - type: file
+      target: ../../catalog/org.yaml
+      rules:
+        - allow: [User, Group]
+    - type: file
+      target: ../../templates/java-service/template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../templates/dotnet-service/template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../templates/python-service/template.yaml
+      rules:
+        - allow: [Template]
+
+kubernetes:
+  serviceLocatorMethod:
+    type: multiTenant
+  clusterLocatorMethods:
+    - type: config
+      clusters: []
+  customResources:
+    - group: argoproj.io
+      apiVersion: v1alpha1
+      plural: applications
+
+permission:
+  enabled: true
+
+shield:
+  branding:
+    productName: SHIELD Platform
+    supportUrl: /docs/default/component/shield-platform
+  integrations:
+    azureDevOps:
+      host: dev.azure.com
+      organization: argosolutions
+      defaultProject: Devops
+      templatesRepo: argo-code
+      templatesBasePath: base-argoit
+      gitOpsRepo: argo-gitops
+      catalogProvider: disabled
+      branchPolicies:
+        automaticReviewerPrincipalNames:
+          - '[argosolutions]\Argo DevSecOps'
+          - '[argosolutions]\Argo Infra'
+    argoCd:
+      baseUrl: https://tower.argoit.net.br
+      appNameAnnotation: shield.io/argocd-app-name
+      projectAnnotation: shield.io/argocd-project
+    terraform:
+      stateBackends:
+        - azurerm

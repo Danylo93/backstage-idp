@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: shield-platform
+  namespace: argocd
+spec:
+  description: Shield platform workloads in hub cluster
+  sourceRepos:
+    - https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+  destinations:
+    - namespace: "*"
+      server: "*"
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

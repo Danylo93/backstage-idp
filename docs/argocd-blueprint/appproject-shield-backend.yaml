@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: shield-backend
+  namespace: argocd
+spec:
+  description: Shield backend workloads managed by IDP/OpenChoreo model
+  sourceRepos:
+    - https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+  destinations:
+    - namespace: "*"
+      server: "*"
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

@@ -1,0 +1,47 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.name }}
+  title: ${{ values.name }}
+  description: ${{ values.description }}
+  tags:
+    - dotnet
+    - shield
+    - golden-path
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/kubernetes-label-selector: app.kubernetes.io/name=${{ values.name }}
+    dev.azure.com/project-repo: ${{ values.azureDevOpsProject }}/${{ values.name }}
+    dev.azure.com/pipeline: ${{ values.name }}
+    shield.io/argocd-app-name: ${{ values.name }}
+    shield.io/argocd-project: shield-${{ values.tier }}
+    shield.io/deployment-environments: dev,rc,stg,prd
+    shield.io/gitops-values-path: gitops/apps/${{ values.tier }}/${{ values.name }}/dev/values.yaml
+spec:
+  type: service
+  lifecycle: ${{ values.lifecycle }}
+  owner: ${{ values.owner }}
+  system: ${{ values.system }}
+  providesApis:
+    - ${{ values.name }}
+  dependsOn:
+    - resource:default/aks-gondor
+    - resource:default/shield-argocd
+    - resource:default/shield-azure-devops
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: ${{ values.name }}
+  title: ${{ values.name }} API
+  description: Contrato OpenAPI do servico ${{ values.name }}.
+  tags:
+    - openapi
+    - dotnet
+spec:
+  type: openapi
+  lifecycle: ${{ values.lifecycle }}
+  owner: ${{ values.owner }}
+  system: ${{ values.system }}
+  definition:
+    $text: ./openapi/openapi.yaml

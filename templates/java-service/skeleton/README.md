@@ -1,0 +1,21 @@
+# ${{ values.name }}
+
+${{ values.description }}
+
+## Estrutura
+
+- `src/`: codigo-fonte Java
+- `docs/`: documentacao operacional inicial
+- `mkdocs.yml`: configuracao do TechDocs
+- `openapi/`: contrato OpenAPI do servico
+- `azure-pipelines.yml`: pipeline baseada em `argo-code/base-argoit`
+- `Dockerfile`: imagem de execucao da aplicacao
+- `catalog-info.yaml`: registro do componente no Backstage
+
+## Golden path SHIELD
+
+- ownership, system e lifecycle registrados no catalogo
+- contrato OpenAPI publicado no Backstage
+- TechDocs versionado junto do codigo
+- bootstrap GitOps com values por ambiente
+- pipeline, branch policies e links operacionais prontos para observabilidade

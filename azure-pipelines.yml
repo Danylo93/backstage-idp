@@ -1,0 +1,251 @@
+trigger:
+  branches:
+    include:
+      - main
+      - developer
+
+pr:
+  branches:
+    include:
+      - main
+      - developer
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  nodeVersion: '24.x'
+  imageRepository: 'acrwakandause2hubiszw.azurecr.io/shield-platform'
+  imageTag: '$(Build.SourceVersion)'
+  gitOpsRepoUrl: 'https://dev.azure.com/argosolutions/Devops/_git/argo-gitops'
+  gitOpsValuesRoot: 'gitops/apps/platform/shield-platform'
+  techdocsEntityRef: 'default/component/shield-platform'
+
+stages:
+  - stage: Validate
+    displayName: Validate Workspace
+    jobs:
+      - job: quality
+        displayName: Lint, test and verify
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '$(nodeVersion)'
+            displayName: Use Node.js 24
+
+          - script: |
+              corepack enable || true
+              yarn install --immutable
+            displayName: Install dependencies
+
+          - script: yarn ci:verify
+            displayName: Run lint, types and tests
+
+          - script: |
+              mkdir -p "$(Build.ArtifactStagingDirectory)"
+              npx --yes @cyclonedx/cyclonedx-npm \
+                --ignore-npm-errors \
+                --output-format json \
+                --output-file "$(Build.ArtifactStagingDirectory)/sbom.cdx.json"
+            displayName: Generate CycloneDX SBOM
+
+          - publish: $(Build.ArtifactStagingDirectory)/sbom.cdx.json
+            artifact: sbom
+            displayName: Publish SBOM artifact
+
+  - stage: Build
+    displayName: Build Release Assets
+    dependsOn: Validate
+    condition: succeeded()
+    jobs:
+      - job: package
+        displayName: Build portal and image
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '$(nodeVersion)'
+            displayName: Use Node.js 24
+
+          - script: |
+              corepack enable || true
+              yarn install --immutable
+            displayName: Install dependencies
+
+          - script: yarn build:all
+            displayName: Build Backstage workspace
+
+          - script: |
+              docker build \
+                -f modules/backend/Dockerfile \
+                -t "$(imageRepository):$(imageTag)" \
+                .
+            displayName: Build backend image
+
+          - script: |
+              mkdir -p "$(Build.ArtifactStagingDirectory)"
+              docker save "$(imageRepository):$(imageTag)" \
+                -o "$(Build.ArtifactStagingDirectory)/shield-platform-image.tar"
+            displayName: Export image artifact
+
+          - script: |
+              if [ -n "$(DOCKER_REGISTRY_USERNAME)" ] && [ -n "$(DOCKER_REGISTRY_PASSWORD)" ]; then
+                registryHost="$(echo "$(imageRepository)" | cut -d/ -f1)"
+                echo "$(DOCKER_REGISTRY_PASSWORD)" | docker login "$registryHost" -u "$(DOCKER_REGISTRY_USERNAME)" --password-stdin
+                docker push "$(imageRepository):$(imageTag)"
+              else
+                echo "Skipping image push because registry credentials are not configured."
+              fi
+            displayName: Push image when registry credentials are available
+
+          - script: |
+              cat <<EOF > "$(Build.ArtifactStagingDirectory)/deployment-metadata.json"
+              {
+                "image": "$(imageRepository)",
+                "tag": "$(imageTag)",
+                "commit": "$(Build.SourceVersion)",
+                "branch": "$(Build.SourceBranch)"
+              }
+              EOF
+            displayName: Generate deployment metadata
+
+          - publish: $(Build.ArtifactStagingDirectory)/shield-platform-image.tar
+            artifact: container-image
+            displayName: Publish image artifact
+
+          - publish: $(Build.ArtifactStagingDirectory)/deployment-metadata.json
+            artifact: deployment-metadata
+            displayName: Publish deployment metadata
+
+  - stage: PublishTechDocs
+    displayName: Publish TechDocs
+    dependsOn: Validate
+    condition: and(succeeded(), ne(variables['TECHDOCS_AZURE_CONNECTION_STRING'], ''), ne(variables['TECHDOCS_AZURE_CONTAINER_NAME'], ''))
+    jobs:
+      - job: techdocs
+        displayName: Generate and publish docs
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '$(nodeVersion)'
+            displayName: Use Node.js 24
+
+          - script: |
+              python3 -m pip install --upgrade pip
+              python3 -m pip install mkdocs-techdocs-core
+            displayName: Install TechDocs generator
+
+          - script: |
+              mkdir -p "$(Build.ArtifactStagingDirectory)/techdocs"
+              npx --yes @techdocs/cli generate \
+                --source-dir . \
+                --output-dir "$(Build.ArtifactStagingDirectory)/techdocs"
+              npx --yes @techdocs/cli publish \
+                --publisher-type azureBlobStorage \
+                --storage-name "$(TECHDOCS_AZURE_CONTAINER_NAME)" \
+                --entity "$(techdocsEntityRef)" \
+                --directory "$(Build.ArtifactStagingDirectory)/techdocs"
+            env:
+              AZURE_STORAGE_CONNECTION_STRING: $(TECHDOCS_AZURE_CONNECTION_STRING)
+            displayName: Publish TechDocs to Azure Blob Storage
+
+  - stage: Deploy_Dev
+    displayName: Promote Dev
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/developer'))
+    jobs:
+      - deployment: gitops_dev
+        displayName: Update GitOps values for dev
+        environment: shield-platform-dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: NodeTool@0
+                  inputs:
+                    versionSpec: '$(nodeVersion)'
+                  displayName: Use Node.js 24
+
+                - script: |
+                    corepack enable || true
+                    yarn install --immutable
+                  displayName: Install dependencies
+
+                - script: |
+                    node ./scripts/update-gitops-values.mjs \
+                      --repo-url "$(gitOpsRepoUrl)" \
+                      --values-path "$(gitOpsValuesRoot)/dev/values.yaml" \
+                      --image-repository "$(imageRepository)" \
+                      --image-tag "$(imageTag)" \
+                      --commit-message "chore(gitops): deploy shield-platform $(imageTag) to dev"
+                  env:
+                    AZURE_DEVOPS_GITOPS_PAT: $(AZURE_DEVOPS_GITOPS_PAT)
+                    AZURE_DEVOPS_PAT: $(AZURE_DEVOPS_PAT)
+                  displayName: Commit GitOps change for dev
+
+  - stage: Deploy_Hub
+    displayName: Promote Hub
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: gitops_hub
+        displayName: Update GitOps values for hub
+        environment: shield-platform-hub
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: NodeTool@0
+                  inputs:
+                    versionSpec: '$(nodeVersion)'
+                  displayName: Use Node.js 24
+
+                - script: |
+                    corepack enable || true
+                    yarn install --immutable
+                  displayName: Install dependencies
+
+                - script: |
+                    node ./scripts/update-gitops-values.mjs \
+                      --repo-url "$(gitOpsRepoUrl)" \
+                      --values-path "$(gitOpsValuesRoot)/hub/values.yaml" \
+                      --image-repository "$(imageRepository)" \
+                      --image-tag "$(imageTag)" \
+                      --commit-message "chore(gitops): deploy shield-platform $(imageTag) to hub"
+                  env:
+                    AZURE_DEVOPS_GITOPS_PAT: $(AZURE_DEVOPS_GITOPS_PAT)
+                    AZURE_DEVOPS_PAT: $(AZURE_DEVOPS_PAT)
+                  displayName: Commit GitOps change for hub
+
+  - stage: Deploy_Prd
+    displayName: Promote Production
+    dependsOn: Deploy_Hub
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['ENABLE_PRD_DEPLOY'], 'true'))
+    jobs:
+      - deployment: gitops_prd
+        displayName: Update GitOps values for production
+        environment: shield-platform-prd
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: NodeTool@0
+                  inputs:
+                    versionSpec: '$(nodeVersion)'
+                  displayName: Use Node.js 24
+
+                - script: |
+                    corepack enable || true
+                    yarn install --immutable
+                  displayName: Install dependencies
+
+                - script: |
+                    node ./scripts/update-gitops-values.mjs \
+                      --repo-url "$(gitOpsRepoUrl)" \
+                      --values-path "$(gitOpsValuesRoot)/prd/values.yaml" \
+                      --image-repository "$(imageRepository)" \
+                      --image-tag "$(imageTag)" \
+                      --commit-message "chore(gitops): deploy shield-platform $(imageTag) to prd"
+                  env:
+                    AZURE_DEVOPS_GITOPS_PAT: $(AZURE_DEVOPS_GITOPS_PAT)
+                    AZURE_DEVOPS_PAT: $(AZURE_DEVOPS_PAT)
+                  displayName: Commit GitOps change for production

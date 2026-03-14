@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net${{ values.dotnetVersion }}</TargetFramework>
+    <AssemblyName>${{ values.name }}.Api</AssemblyName>
+    <RootNamespace>Service.Api</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+</Project>

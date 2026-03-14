@@ -1,0 +1,30 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: phoenix-api
+  title: Phoenix API
+  description: Servico de referencia para o contexto da Squad Phoenix.
+  tags:
+    - java
+    - phoenix
+    - kubernetes
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/kubernetes-label-selector: app.kubernetes.io/name=customer-identity-api
+    dev.azure.com/project-repo: Phoenix/phoenix-api
+    dev.azure.com/pipeline: phoenix-api-ci
+    shield.io/argocd-app-name: phoenix-api
+    shield.io/argocd-project: shield-backend
+    shield.io/deployment-environments: dev,rc,stg,prd
+    shield.io/gitops-values-path: gitops/apps/backend/phoenix-api/dev/values.yaml
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/squad-phoenix
+  system: phoenix
+  domain: argo-products
+  providesApis:
+    - phoenix-api
+  dependsOn:
+    - resource:default/aks-gondor
+    - resource:default/shield-argocd

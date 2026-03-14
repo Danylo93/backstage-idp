@@ -1,0 +1,18 @@
+site_name: SHIELD Platform
+site_description: Backstage-based Internal Developer Platform
+docs_dir: docs
+nav:
+  - Overview: index.md
+  - Onboarding: onboarding.md
+  - Architecture: architecture.md
+  - Standards: standards.md
+  - Integrations:
+      - Azure DevOps: integrations/azure-devops.md
+      - Argo CD: integrations/argocd.md
+      - Terraform: integrations/terraform.md
+      - Kubernetes: integrations/kubernetes.md
+  - Runbooks:
+      - AKS Private Discovery: aks-private-discovery-runbook.md
+      - ArgoCD Blueprint: argocd-blueprint/README.md
+plugins:
+  - techdocs-core

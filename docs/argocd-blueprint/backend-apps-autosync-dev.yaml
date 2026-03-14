@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: backend-apps-autosync-dev
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - app: sample-api
+            namespace: sample-team
+  template:
+    metadata:
+      name: "{{app}}-dev"
+      labels:
+        shield.env: dev
+        shield.cluster: gondor
+    spec:
+      project: shield-backend
+      source:
+        repoURL: https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+        targetRevision: main
+        path: "gitops/apps/backend/{{app}}/dev"
+      destination:
+        server: https://gondor.cluster.local
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

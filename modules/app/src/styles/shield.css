@@ -1,0 +1,1499 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --shield-primary: #2bbdee;
+  --shield-primary-strong: #38bdf8;
+  --shield-bg: #050b14;
+  --shield-surface: #0d1624;
+  --shield-surface-2: #121c2b;
+  --shield-surface-3: #09111d;
+  --shield-border: rgba(43, 189, 238, 0.16);
+  --shield-border-strong: rgba(43, 189, 238, 0.3);
+  --shield-text: #f8fbff;
+  --shield-muted: #8c9ab0;
+  --shield-dim: #64748b;
+  --shield-success: #16d96c;
+  --shield-warning: #f59e0b;
+  --shield-shadow: 0 0 0 1px rgba(43, 189, 238, 0.08),
+    0 18px 40px rgba(0, 0, 0, 0.42), 0 0 35px rgba(43, 189, 238, 0.08);
+}
+
+html,
+body,
+#root {
+  background: var(--shield-bg);
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+  color: var(--shield-text);
+}
+
+body {
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background:
+    linear-gradient(180deg, rgba(11, 25, 45, 0.45), rgba(5, 11, 20, 0.98)),
+    radial-gradient(circle at top center, rgba(43, 189, 238, 0.12), transparent 30%),
+    var(--shield-bg);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(43, 189, 238, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 189, 238, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.34;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.015) 0,
+      rgba(255, 255, 255, 0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  opacity: 0.18;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.MuiTypography-h1,
+.MuiTypography-h2,
+.MuiTypography-h3,
+.MuiTypography-h4,
+.MuiTypography-h5,
+.MuiTypography-h6 {
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+  letter-spacing: -0.03em;
+}
+
+a {
+  color: var(--shield-primary);
+}
+
+@keyframes shield-scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes shield-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  8% {
+    opacity: 0.86;
+  }
+  9% {
+    opacity: 1;
+  }
+  12% {
+    opacity: 0.94;
+  }
+}
+
+@keyframes shield-glitch {
+  0% {
+    transform: translate(0);
+    text-shadow: none;
+  }
+  20% {
+    transform: translate(-1px, 1px);
+    text-shadow: 1px 0 0 rgba(255, 0, 193, 0.7), -1px 0 0 rgba(0, 255, 249, 0.7);
+  }
+  40% {
+    transform: translate(1px, -1px);
+    text-shadow: -1px 0 0 rgba(255, 0, 193, 0.7), 1px 0 0 rgba(0, 255, 249, 0.7);
+  }
+  100% {
+    transform: translate(0);
+    text-shadow: none;
+  }
+}
+
+.shield-glitch-hover:hover {
+  animation: shield-glitch 0.2s linear 2;
+}
+
+.shield-data-card,
+.MuiCard-root,
+.MuiPaper-root.MuiCard-root,
+.MuiPaper-rounded,
+.MuiPaper-elevation1,
+.MuiPaper-elevation2,
+.MuiPaper-elevation3,
+.MuiPaper-elevation4 {
+  background: linear-gradient(180deg, rgba(13, 22, 36, 0.96), rgba(9, 17, 29, 0.96)) !important;
+  border: 1px solid var(--shield-border) !important;
+  box-shadow: var(--shield-shadow) !important;
+  border-radius: 18px !important;
+  color: var(--shield-text) !important;
+}
+
+.MuiButton-root {
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  font-weight: 700 !important;
+  border-radius: 10px !important;
+}
+
+.MuiButton-containedPrimary {
+  background: linear-gradient(180deg, #41cfff 0%, #25bbed 100%) !important;
+  color: #04111f !important;
+  box-shadow: 0 0 18px rgba(43, 189, 238, 0.36) !important;
+}
+
+.MuiButton-containedPrimary:hover {
+  filter: brightness(1.08);
+}
+
+.MuiButton-outlined {
+  color: var(--shield-primary) !important;
+  border-color: var(--shield-border-strong) !important;
+  background: rgba(43, 189, 238, 0.08) !important;
+}
+
+.MuiButton-outlined:hover {
+  background: rgba(43, 189, 238, 0.16) !important;
+}
+
+.MuiChip-root {
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  background: rgba(43, 189, 238, 0.08) !important;
+  border: 1px solid rgba(43, 189, 238, 0.18) !important;
+  color: var(--shield-primary) !important;
+}
+
+.MuiInputBase-root,
+.MuiOutlinedInput-root,
+.MuiInputBase-formControl,
+.MuiSelect-root {
+  border-radius: 10px !important;
+  background: rgba(5, 11, 20, 0.72) !important;
+  color: var(--shield-text) !important;
+}
+
+.MuiOutlinedInput-root fieldset,
+.MuiInput-underline::before {
+  border-color: rgba(43, 189, 238, 0.18) !important;
+}
+
+.MuiOutlinedInput-root:hover fieldset {
+  border-color: rgba(43, 189, 238, 0.4) !important;
+}
+
+.Mui-focused .MuiOutlinedInput-notchedOutline,
+.MuiInput-underline::after {
+  border-color: var(--shield-primary) !important;
+}
+
+.MuiInputLabel-root,
+.MuiFormLabel-root,
+.MuiFormHelperText-root,
+.MuiTypography-colorTextSecondary,
+.MuiTableCell-head,
+.MuiTableCell-body,
+.MuiMenuItem-root,
+.MuiListItemText-primary,
+.MuiListItemText-secondary,
+.MuiTab-textColorInherit,
+.MuiTab-textColorPrimary {
+  color: inherit !important;
+}
+
+.MuiTab-root {
+  min-height: 50px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.14em !important;
+  font-size: 0.8rem !important;
+  color: var(--shield-dim) !important;
+}
+
+.MuiTabs-indicator {
+  height: 2px !important;
+  background: var(--shield-primary) !important;
+  box-shadow: 0 0 12px rgba(43, 189, 238, 0.4);
+}
+
+.MuiTab-textColorPrimary.Mui-selected,
+.MuiTab-textColorInherit.Mui-selected {
+  color: var(--shield-primary) !important;
+}
+
+.MuiAlert-root,
+[class*='Banner'] {
+  background: linear-gradient(180deg, rgba(32, 14, 14, 0.96), rgba(18, 10, 10, 0.96)) !important;
+  border: 1px solid rgba(244, 63, 94, 0.2) !important;
+  color: #ffd5dc !important;
+}
+
+[class*='PageHeader'],
+[class*='Header-header'] {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+[class*='Header-title'],
+[class*='Header-subtitle'],
+[class*='Header-type'] {
+  color: var(--shield-text) !important;
+}
+
+[class*='Content-content'],
+[class*='PageWithHeader-content'] {
+  padding-top: 0 !important;
+}
+
+.shield-catalog-page [class*='Header-header'],
+.shield-templates-page [class*='Header-header'],
+.shield-docs-page [class*='Header-header'],
+.shield-api-page [class*='Header-header'],
+.shield-settings-page [class*='Header-header'],
+.shield-topology-page [class*='Header-header'] {
+  display: none !important;
+}
+
+.shield-catalog-page [class*='Page-root'],
+.shield-templates-page [class*='Page-root'],
+.shield-docs-page [class*='Page-root'],
+.shield-api-page [class*='Page-root'],
+.shield-settings-page [class*='Page-root'],
+.shield-topology-page [class*='Page-root'] {
+  background: transparent !important;
+}
+
+.shield-catalog-page [class*='Content-content'],
+.shield-templates-page [class*='Content-content'],
+.shield-docs-page [class*='Content-content'],
+.shield-api-page [class*='Content-content'],
+.shield-settings-page [class*='Content-content'],
+.shield-topology-page [class*='Content-content'] {
+  padding: 0 !important;
+}
+
+[class*='CatalogTable-card'],
+[class*='InfoCard'],
+[class*='TemplateCard'],
+[class*='TemplateGroup'],
+[class*='EntityLayoutGridItem'],
+[class*='ScaffolderPage-card'],
+[class*='UserSettingsPage'],
+[class*='SettingsTab'],
+[class*='TaskSteps'],
+[class*='TaskStatus'],
+[class*='TaskLogStream'],
+[class*='TaskPage'] {
+  background: linear-gradient(180deg, rgba(13, 22, 36, 0.95), rgba(9, 17, 29, 0.96)) !important;
+  border: 1px solid var(--shield-border) !important;
+  box-shadow: var(--shield-shadow) !important;
+  border-radius: 18px !important;
+  color: var(--shield-text) !important;
+}
+
+[class*='CatalogTable'] [class*='MuiToolbar-root'],
+[class*='TechDocsTable'] [class*='MuiToolbar-root'],
+[class*='TemplateList'] [class*='MuiToolbar-root'],
+[class*='ScaffolderPage'] [class*='MuiToolbar-root'] {
+  background: rgba(17, 28, 43, 0.8) !important;
+  border-bottom: 1px solid rgba(43, 189, 238, 0.12) !important;
+}
+
+.MuiTable-root,
+.MuiTableContainer-root {
+  background: transparent !important;
+}
+
+.MuiTable-root thead tr,
+[class*='MuiTableHead-root'] tr {
+  background: rgba(7, 15, 26, 0.82) !important;
+}
+
+.MuiTable-root th {
+  font-size: 0.72rem !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  color: #74839a !important;
+  border-bottom: 1px solid rgba(43, 189, 238, 0.12) !important;
+}
+
+.MuiTable-root td {
+  color: var(--shield-text) !important;
+  border-bottom: 1px solid rgba(43, 189, 238, 0.08) !important;
+}
+
+.MuiTable-root tbody tr {
+  transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.MuiTable-root tbody tr:hover {
+  background: rgba(43, 189, 238, 0.05) !important;
+  box-shadow: inset 2px 0 0 var(--shield-primary);
+}
+
+[class*='SidebarItem'] {
+  border-radius: 10px !important;
+  margin: 4px 0 !important;
+}
+
+[class*='SidebarItem']:hover {
+  background: rgba(43, 189, 238, 0.08) !important;
+}
+
+[class*='SidebarItem'][class*='selected'],
+[class*='SidebarItem'][aria-current='page'] {
+  background: linear-gradient(90deg, rgba(43, 189, 238, 0.16), rgba(43, 189, 238, 0.04)) !important;
+  border-left: 2px solid var(--shield-primary) !important;
+}
+
+[class*='SidebarItemIcon'] {
+  min-width: 34px !important;
+}
+
+[class*='SidebarItemText'] {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+[class*='SidebarSubmenu'] {
+  background: transparent !important;
+}
+
+[class*='SidebarDivider'] {
+  display: none !important;
+}
+
+[class*='EntityLayout'] [role='tablist'] {
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(43, 189, 238, 0.12);
+}
+
+[class*='EntityLayoutGridItem'] [class*='MuiCardHeader-root'],
+[class*='InfoCard'] [class*='MuiCardHeader-root'],
+[class*='TemplateCard'] [class*='MuiCardHeader-root'] {
+  background: rgba(17, 28, 43, 0.65) !important;
+  border-bottom: 1px solid rgba(43, 189, 238, 0.12);
+}
+
+[class*='EntityLayoutGridItem'] [class*='MuiCardHeader-title'],
+[class*='InfoCard'] [class*='MuiCardHeader-title'],
+[class*='TemplateCard'] [class*='MuiCardHeader-title'] {
+  font-family: 'Space Grotesk', 'Segoe UI', sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--shield-text) !important;
+}
+
+[class*='TemplateCard'] [class*='MuiCardHeader-subheader'],
+[class*='CatalogTable-card'] [class*='MuiTypography-colorTextSecondary'],
+[class*='UserSettingsPage'] [class*='MuiTypography-colorTextSecondary'] {
+  color: var(--shield-muted) !important;
+}
+
+.MuiDivider-root {
+  background-color: rgba(43, 189, 238, 0.12) !important;
+}
+
+.MuiSwitch-colorSecondary.Mui-checked {
+  color: var(--shield-primary) !important;
+}
+
+.MuiSwitch-colorSecondary.Mui-checked + .MuiSwitch-track {
+  background-color: var(--shield-primary) !important;
+}
+
+.MuiAvatar-root,
+[class*='UserSettingsSignInAvatar'] [class*='MuiAvatar-root'] {
+  background: rgba(43, 189, 238, 0.12) !important;
+  color: var(--shield-primary) !important;
+}
+
+.MuiPopover-paper,
+.MuiMenu-paper,
+.MuiDialog-paper {
+  background: linear-gradient(180deg, rgba(13, 22, 36, 0.98), rgba(9, 17, 29, 0.98)) !important;
+  border: 1px solid var(--shield-border) !important;
+  color: var(--shield-text) !important;
+}
+
+.MuiBackdrop-root {
+  backdrop-filter: blur(4px);
+  background-color: rgba(0, 4, 10, 0.62) !important;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #07101a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(43, 189, 238, 0.65);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--shield-primary);
+}
+
+.shield-scaffolder-shell {
+  position: relative;
+}
+
+.shield-scaffolder-shell__main {
+  min-width: 0;
+}
+
+.shield-scaffolder-shell .MuiContainer-root {
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+.shield-scaffolder-shell [class*='Content-content'] {
+  padding: 0 !important;
+}
+
+.shield-scaffolder-shell [class*='Page-root'],
+.shield-scaffolder-shell [class*='PageWithHeader-content'],
+.shield-scaffolder-shell [class*='Header-header'] {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.shield-scaffolder-shell [class*='ScaffolderPage'] [class*='MuiPaper-root'],
+.shield-scaffolder-shell [class*='Workflow'] [class*='MuiPaper-root'],
+.shield-scaffolder-shell [class*='TaskPage'] [class*='MuiPaper-root'],
+.shield-scaffolder-shell [class*='TaskLogStream'] {
+  border-radius: 18px !important;
+}
+
+.shield-scaffolder-shell .MuiStepper-root {
+  padding: 8px 0 26px !important;
+  background: transparent !important;
+}
+
+.shield-scaffolder-shell .MuiStep-root {
+  position: relative;
+}
+
+.shield-scaffolder-shell .MuiStepConnector-line {
+  border-top-width: 2px !important;
+  border-color: rgba(43, 189, 238, 0.16) !important;
+}
+
+.shield-scaffolder-shell .MuiStepLabel-root {
+  gap: 12px;
+}
+
+.shield-scaffolder-shell .MuiStepLabel-label {
+  margin-top: 10px !important;
+  color: #71829b !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.22em !important;
+  text-transform: uppercase !important;
+  font-size: 0.72rem !important;
+}
+
+.shield-scaffolder-shell .MuiStepLabel-active .MuiStepLabel-label,
+.shield-scaffolder-shell .MuiStepLabel-completed .MuiStepLabel-label {
+  color: #39d8ff !important;
+}
+
+.shield-scaffolder-shell .MuiStepButton-root {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shield-scaffolder-shell .MuiStepIcon-root {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 999px !important;
+  background: rgba(8, 16, 27, 0.96) !important;
+  border: 2px solid rgba(43, 189, 238, 0.18) !important;
+  color: #61728d !important;
+  box-shadow: none !important;
+}
+
+.shield-scaffolder-shell .MuiStepIcon-root.MuiStepIcon-active {
+  border-color: rgba(43, 189, 238, 0.55) !important;
+  color: #39d8ff !important;
+  box-shadow: 0 0 24px rgba(43, 189, 238, 0.2) !important;
+}
+
+.shield-scaffolder-shell .MuiStepIcon-root.MuiStepIcon-completed {
+  border-color: rgba(0, 255, 157, 0.65) !important;
+  color: #00ff9d !important;
+  background: rgba(0, 255, 157, 0.08) !important;
+}
+
+.shield-scaffolder-shell [class*='Form'] > form,
+.shield-scaffolder-shell [class*='Workflow'] > form,
+.shield-scaffolder-shell form.rjsf {
+  padding: 28px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgba(9, 17, 29, 0.96), rgba(7, 14, 24, 0.96)) !important;
+  border: 1px solid rgba(43, 189, 238, 0.18) !important;
+  box-shadow: 0 0 0 1px rgba(43, 189, 238, 0.06), 0 18px 40px rgba(0, 0, 0, 0.42), 0 0 32px rgba(43, 189, 238, 0.08) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.shield-scaffolder-shell [class*='Form'] > form::before,
+.shield-scaffolder-shell form.rjsf::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(43, 189, 238, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 189, 238, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.35;
+}
+
+.shield-scaffolder-shell .field-object > legend,
+.shield-scaffolder-shell .rjsf fieldset > legend,
+.shield-scaffolder-shell .rjsf .MuiTypography-h5,
+.shield-scaffolder-shell .rjsf .MuiTypography-h6 {
+  position: relative;
+  z-index: 1;
+  color: #f8fbff !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 18px !important;
+}
+
+.shield-scaffolder-shell .rjsf .MuiFormControl-root,
+.shield-scaffolder-shell .rjsf .field,
+.shield-scaffolder-shell .rjsf .form-group {
+  position: relative;
+  z-index: 1;
+}
+
+.shield-scaffolder-shell .rjsf .MuiFormLabel-root,
+.shield-scaffolder-shell .rjsf label {
+  color: #39d8ff !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+}
+
+.shield-scaffolder-shell .rjsf .MuiFormHelperText-root,
+.shield-scaffolder-shell .rjsf .help-block,
+.shield-scaffolder-shell .rjsf .field-description {
+  color: #7a8ca9 !important;
+  font-size: 0.82rem !important;
+}
+
+.shield-scaffolder-shell .rjsf .MuiOutlinedInput-root,
+.shield-scaffolder-shell .rjsf .MuiInputBase-root,
+.shield-scaffolder-shell .rjsf textarea,
+.shield-scaffolder-shell .rjsf select,
+.shield-scaffolder-shell .rjsf input {
+  background: rgba(5, 11, 20, 0.84) !important;
+  border-radius: 0 !important;
+  font-family: 'Roboto Mono', monospace !important;
+}
+
+.shield-scaffolder-shell .rjsf .MuiOutlinedInput-root fieldset {
+  border-color: rgba(43, 189, 238, 0.18) !important;
+}
+
+.shield-scaffolder-shell .rjsf .MuiOutlinedInput-root:hover fieldset,
+.shield-scaffolder-shell .rjsf .Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(43, 189, 238, 0.48) !important;
+}
+
+.shield-scaffolder-shell .rjsf .MuiButton-root {
+  min-height: 52px;
+  padding-inline: 24px !important;
+}
+
+.shield-scaffolder-shell .rjsf .MuiButton-containedPrimary {
+  box-shadow: 0 0 18px rgba(43, 189, 238, 0.28) !important;
+}
+
+.shield-scaffolder-shell .rjsf .MuiButton-outlined {
+  border-color: rgba(43, 189, 238, 0.28) !important;
+}
+
+.shield-scaffolder-shell [class*='ReviewState'] {
+  padding: 28px !important;
+  background: linear-gradient(180deg, rgba(9, 17, 29, 0.96), rgba(7, 14, 24, 0.96)) !important;
+  border: 1px solid rgba(43, 189, 238, 0.18) !important;
+  border-radius: 18px !important;
+}
+
+.shield-scaffolder-shell [class*='TaskSteps'] {
+  padding: 12px 18px 20px !important;
+  background: rgba(8, 14, 24, 0.92) !important;
+}
+
+.shield-scaffolder-shell [class*='TaskLogStream'] {
+  background: rgba(3, 7, 13, 0.96) !important;
+  border: 1px solid rgba(43, 189, 238, 0.18) !important;
+  box-shadow: inset 0 0 0 1px rgba(43, 189, 238, 0.04), 0 18px 40px rgba(0, 0, 0, 0.42) !important;
+  font-family: 'Roboto Mono', monospace !important;
+}
+
+.shield-scaffolder-shell [class*='TaskLogStream'] pre,
+.shield-scaffolder-shell [class*='TaskLogStream'] code,
+.shield-scaffolder-shell [class*='TaskLogStream'] [class*='logLine'] {
+  font-family: 'Roboto Mono', monospace !important;
+}
+
+.shield-scaffolder-shell [class*='TaskLogStream']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(57, 216, 255, 0.03) 0,
+      rgba(57, 216, 255, 0.03) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+}
+
+.shield-scaffolder-shell [class*='TaskPage'] [class*='MuiCardActions-root'],
+.shield-scaffolder-shell [class*='TaskPage'] [class*='buttonBar'],
+.shield-scaffolder-shell [class*='TaskPage'] .MuiDialogActions-root {
+  gap: 12px;
+}
+
+.shield-task-steps-panel {
+  padding: 18px 24px !important;
+  background: rgba(8, 14, 24, 0.92) !important;
+}
+
+.shield-task-steps-panel__track {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  overflow-x: auto;
+}
+
+.shield-task-step {
+  min-width: 150px;
+  flex: 1 1 0;
+}
+
+.shield-task-step__indicatorRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shield-task-step__indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid rgba(102, 122, 150, 0.55);
+  color: rgba(102, 122, 150, 0.85);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex: 0 0 auto;
+}
+
+.shield-task-step__indicatorSymbol {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  position: relative;
+  width: 14px;
+  height: 14px;
+}
+
+.shield-task-step__indicatorSymbol--completed::before {
+  content: '';
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+.shield-task-step__indicatorSymbol--active::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 10px rgba(57, 216, 255, 0.45);
+}
+
+.shield-task-step__indicatorSymbol--error::before,
+.shield-task-step__indicatorSymbol--error::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 1px;
+  width: 2px;
+  height: 12px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.shield-task-step__indicatorSymbol--error::before {
+  transform: rotate(45deg);
+}
+
+.shield-task-step__indicatorSymbol--error::after {
+  transform: rotate(-45deg);
+}
+
+.shield-task-step__indicatorSymbol--warning {
+  width: 16px;
+  height: 14px;
+}
+
+.shield-task-step__indicatorSymbol--warning::before {
+  content: '!';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #241300;
+  font-size: 0.78rem;
+  font-weight: 900;
+  line-height: 1;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  background: currentColor;
+}
+
+.shield-task-step__indicatorSymbol--pending::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.45;
+}
+
+.shield-task-step__connector {
+  height: 2px;
+  flex: 1 1 auto;
+  background: rgba(43, 189, 238, 0.16);
+}
+
+.shield-task-step__content {
+  padding-top: 14px;
+  padding-right: 18px;
+}
+
+.shield-task-step__title {
+  color: #f3f7fc;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.shield-task-step__meta {
+  margin-top: 4px;
+  color: #7f90aa;
+  font-size: 0.82rem;
+}
+
+.shield-task-step--completed .shield-task-step__indicator {
+  border-color: rgba(0, 255, 157, 0.7);
+  color: #00ff9d;
+  background: rgba(0, 255, 157, 0.08);
+}
+
+.shield-task-step--active .shield-task-step__indicator {
+  border-color: rgba(57, 216, 255, 0.7);
+  color: #39d8ff;
+  background: rgba(57, 216, 255, 0.08);
+  box-shadow: 0 0 16px rgba(57, 216, 255, 0.24);
+}
+
+.shield-task-step--warning .shield-task-step__indicator {
+  position: relative;
+  border-radius: 10px;
+  border-color: rgba(245, 158, 11, 0.78);
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.22);
+}
+
+.shield-task-step--warning .shield-task-step__indicatorSymbol {
+  transform: translateY(-1px);
+}
+
+.shield-task-step--warning .shield-task-step__title,
+.shield-task-step--warning .shield-task-step__meta {
+  color: #ffd08a;
+}
+
+.shield-task-step--error .shield-task-step__indicator {
+  border-color: rgba(249, 89, 89, 0.78);
+  color: #ff6c6c;
+  background: rgba(249, 89, 89, 0.1);
+}
+
+.shield-task-step--error .shield-task-step__title,
+.shield-task-step--error .shield-task-step__meta {
+  color: #ffd2d2;
+}
+
+.shield-scaffolder-shell--task [class*='TaskPage'] > div:first-child,
+.shield-scaffolder-shell--task [class*='TaskStatus'],
+.shield-scaffolder-shell--task [class*='TaskPage'] [class*='MuiAlert-root'] {
+  border-radius: 18px !important;
+}
+
+.shield-scaffolder-shell--task [class*='TaskPage'] [class*='MuiGrid-container'] {
+  align-items: start;
+}
+
+.shield-scaffolder-shell .MuiStepLabel-labelContainer small,
+.shield-scaffolder-shell .MuiStepLabel-labelContainer span {
+  color: inherit;
+}
+
+.shield-task-error-state {
+  position: relative;
+  overflow: hidden;
+  padding: 28px !important;
+  background:
+    linear-gradient(180deg, rgba(24, 9, 12, 0.96), rgba(13, 8, 14, 0.96)),
+    radial-gradient(circle at top right, rgba(249, 89, 89, 0.18), transparent 36%) !important;
+  border: 1px solid rgba(255, 102, 102, 0.2) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 102, 102, 0.08),
+    0 24px 48px rgba(0, 0, 0, 0.38),
+    0 0 32px rgba(255, 102, 102, 0.08) !important;
+}
+
+.shield-task-error-state::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.012) 0,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  opacity: 0.18;
+}
+
+.shield-task-error-state__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(240px, 0.8fr);
+  align-items: center;
+}
+
+.shield-task-error-state__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #ffb0b0;
+}
+
+.shield-task-error-state__eyebrow::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #ff6c6c;
+  box-shadow: 0 0 14px rgba(255, 108, 108, 0.6);
+}
+
+.shield-task-error-state__title {
+  margin: 16px 0 14px;
+  font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+  line-height: 1;
+  color: #fff4f4;
+}
+
+.shield-task-error-state__body {
+  max-width: 720px;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: #f0d9d9;
+}
+
+.shield-task-error-state__body code,
+.shield-task-error-state__meta strong {
+  font-family: 'Roboto Mono', monospace;
+  color: #ffffff;
+}
+
+.shield-task-error-state__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.shield-task-error-state__meta > div {
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 108, 108, 0.12);
+  background: rgba(14, 8, 11, 0.72);
+}
+
+.shield-task-error-state__meta span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b28a8a;
+}
+
+.shield-task-error-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.shield-task-error-state__actions .MuiButton-containedPrimary {
+  background: linear-gradient(180deg, #ff8d8d 0%, #ff5f7e 100%) !important;
+  color: #19080c !important;
+  box-shadow: 0 0 18px rgba(255, 95, 126, 0.3) !important;
+}
+
+.shield-task-error-state__actions .MuiButton-text {
+  color: #ffd2d2 !important;
+}
+
+.shield-task-error-state__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  justify-content: center;
+}
+
+.shield-task-error-state__illustration {
+  width: 100%;
+  max-width: 320px;
+  filter: drop-shadow(0 0 18px rgba(57, 216, 255, 0.14));
+}
+
+.shield-task-error-state__visual-caption {
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b8c6da;
+  text-align: center;
+}
+
+.shield-settings-page {
+  position: relative;
+  z-index: 1;
+  padding: 22px 32px 40px;
+}
+
+.shield-preferences {
+  padding: 0 !important;
+}
+
+.shield-preferences__hero {
+  position: relative;
+  overflow: hidden;
+  margin: 8px 0 28px;
+  padding: 56px 56px 52px;
+  border-radius: 16px;
+  border: 1px solid rgba(43, 189, 238, 0.18);
+  border-left: 4px solid #39d8ff;
+  background:
+    linear-gradient(180deg, rgba(9, 17, 29, 0.96), rgba(7, 14, 24, 0.96)),
+    radial-gradient(circle at top right, rgba(43, 189, 238, 0.12), transparent 32%);
+  box-shadow:
+    0 0 0 1px rgba(43, 189, 238, 0.04),
+    0 18px 40px rgba(0, 0, 0, 0.42),
+    0 0 32px rgba(43, 189, 238, 0.08);
+}
+
+.shield-preferences__hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(43, 189, 238, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 189, 238, 0.04) 1px, transparent 1px);
+  background-size: 38px 38px;
+  opacity: 0.46;
+}
+
+.shield-preferences__hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.01) 0,
+      rgba(255, 255, 255, 0.01) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  opacity: 0.12;
+}
+
+.shield-preferences__heroContent,
+.shield-preferences__panel,
+.shield-preferences__footer {
+  position: relative;
+  z-index: 1;
+}
+
+.shield-preferences__heroGlow {
+  position: absolute;
+  right: -84px;
+  top: -74px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(43, 189, 238, 0.16), transparent 70%);
+  filter: blur(12px);
+  opacity: 0.72;
+}
+
+.shield-preferences__heroTitle {
+  margin: 0;
+  color: #f8fbff;
+  font-size: clamp(3rem, 4.2vw, 4.4rem);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+  font-weight: 700;
+  text-shadow: 0 0 18px rgba(43, 189, 238, 0.06);
+}
+
+.shield-preferences__heroSubtitle {
+  max-width: 780px;
+  margin: 18px 0 0;
+  color: #8a99b0;
+  font-size: 1.06rem;
+  line-height: 1.7;
+}
+
+.shield-preferences__tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  border-bottom: 1px solid rgba(43, 189, 238, 0.14);
+  margin-bottom: 28px;
+}
+
+.shield-preferences__tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #677992;
+  padding: 0 30px 18px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.shield-preferences__tab:hover {
+  color: #d5e6fa;
+}
+
+.shield-preferences__tab--active {
+  color: #39d8ff;
+  border-bottom: 2px solid #39d8ff;
+  background: linear-gradient(180deg, rgba(43, 189, 238, 0.08), rgba(43, 189, 238, 0));
+}
+
+.shield-preferences__panel {
+  padding-bottom: 10px;
+}
+
+.shield-preferences__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.shield-preferences__card {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(43, 189, 238, 0.14);
+  background:
+    linear-gradient(180deg, rgba(13, 22, 36, 0.96), rgba(9, 17, 29, 0.96)),
+    radial-gradient(circle at top right, rgba(43, 189, 238, 0.08), transparent 42%);
+  box-shadow: var(--shield-shadow);
+}
+
+.shield-preferences__card--identity {
+  grid-column: 1;
+}
+
+.shield-preferences__cardHeader {
+  padding: 24px 28px 22px;
+  border-bottom: 1px solid rgba(43, 189, 238, 0.1);
+  background: linear-gradient(180deg, rgba(17, 28, 43, 0.72), rgba(13, 22, 36, 0.68));
+}
+
+.shield-preferences__cardHeader span {
+  color: #d9e5f7;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.shield-preferences__cardBody {
+  padding: 28px;
+}
+
+.shield-preferences__profileBody {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.shield-preferences__profileIdentity {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  min-width: 0;
+}
+
+.shield-preferences__avatarShell {
+  width: 102px;
+  height: 102px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(19, 30, 48, 0.82);
+  border: 2px solid rgba(43, 189, 238, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(43, 189, 238, 0.03);
+  overflow: hidden;
+}
+
+.shield-preferences__avatarShell .MuiAvatar-root,
+.shield-preferences__avatarShell img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 50% !important;
+}
+
+.shield-preferences__profileMeta {
+  min-width: 0;
+}
+
+.shield-preferences__profileName {
+  color: #ffffff;
+  font-size: 1.95rem;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+}
+
+.shield-preferences__profileEmail {
+  margin-top: 10px;
+  color: #d6e6f9;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.shield-preferences__profileHint {
+  margin-top: 8px;
+  color: #39d8ff;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.shield-preferences__profileAction {
+  flex: 0 0 auto;
+}
+
+.shield-preferences__profileAction button {
+  color: #8193ad !important;
+}
+
+.shield-preferences__appearanceBody .MuiList-root {
+  padding: 0 !important;
+}
+
+.shield-preferences__appearanceBody .MuiListItem-root {
+  padding: 0 0 26px !important;
+  margin: 0 0 24px !important;
+  border-bottom: 1px solid rgba(43, 189, 238, 0.1);
+}
+
+.shield-preferences__appearanceBody .MuiListItem-root:last-child {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+  border-bottom: 0;
+}
+
+.shield-preferences__appearanceBody .MuiListItemText-primary {
+  color: #f8fbff !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+}
+
+.shield-preferences__appearanceBody .MuiListItemText-secondary {
+  margin-top: 6px !important;
+  color: #7587a1 !important;
+  font-size: 0.78rem !important;
+  line-height: 1.5 !important;
+}
+
+.shield-preferences__appearanceBody .MuiToggleButtonGroup-root {
+  gap: 8px;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(5, 11, 20, 0.76);
+  border: 1px solid rgba(43, 189, 238, 0.16);
+}
+
+.shield-preferences__appearanceBody .MuiToggleButton-root {
+  border: 0 !important;
+  border-radius: 10px !important;
+  min-width: 104px;
+  padding: 12px 16px !important;
+  color: #74839a !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+.shield-preferences__appearanceBody .MuiToggleButton-root.Mui-selected {
+  color: #04111f !important;
+  background: linear-gradient(180deg, #41cfff 0%, #25bbed 100%) !important;
+  box-shadow: 0 0 18px rgba(43, 189, 238, 0.28);
+}
+
+.shield-preferences__appearanceBody .MuiToggleButton-root svg {
+  display: none;
+}
+
+.shield-preferences__appearanceBody .MuiListItemSecondaryAction-root {
+  right: 0 !important;
+}
+
+.shield-preferences__appearanceBody .MuiSwitch-root {
+  margin-right: 4px;
+}
+
+.shield-preferences__identityBody {
+  display: grid;
+  gap: 22px;
+}
+
+.shield-preferences__identityRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.shield-preferences__identityLabel {
+  min-width: 170px;
+  color: #73839c;
+  font-size: 0.92rem;
+}
+
+.shield-preferences__identityValue {
+  color: #f8fbff;
+  font-size: 0.96rem;
+  flex: 1 1 auto;
+}
+
+.shield-preferences__identityValue a {
+  color: #39d8ff !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+}
+
+.shield-preferences__identityValue a:hover {
+  text-shadow: 0 0 10px rgba(57, 216, 255, 0.22);
+}
+
+.shield-preferences__identityMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding-top: 10px;
+  color: #7b8ca7;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.shield-preferences__identityEmpty {
+  color: #9ba7bb;
+  line-height: 1.7;
+}
+
+.shield-preferences__stack > .MuiPaper-root,
+.shield-preferences__stack > div > .MuiPaper-root,
+.shield-preferences__stack [class*='InfoCard'] {
+  margin: 0 !important;
+}
+
+.shield-preferences__stack .MuiCardHeader-root,
+.shield-preferences__stack [class*='MuiCardHeader-root'] {
+  padding: 24px 28px 22px !important;
+}
+
+.shield-preferences__stack .MuiCardContent-root,
+.shield-preferences__stack [class*='MuiCardContent-root'] {
+  padding: 28px !important;
+}
+
+.shield-preferences__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding: 18px 0 0;
+  border-top: 1px solid rgba(43, 189, 238, 0.12);
+}
+
+.shield-preferences__footerGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  color: #61728d;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.shield-preferences__footerGroup--right {
+  justify-content: flex-end;
+}
+
+@media (max-width: 1120px) {
+  .shield-settings-page {
+    padding-inline: 20px;
+  }
+
+  .shield-preferences__hero {
+    padding: 40px 32px 36px;
+  }
+
+  .shield-preferences__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shield-preferences__card--identity {
+    grid-column: auto;
+  }
+
+  .shield-task-error-state__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .shield-settings-page {
+    padding-inline: 16px;
+    padding-bottom: 28px;
+  }
+
+  .shield-preferences__hero {
+    padding: 34px 22px 30px;
+  }
+
+  .shield-preferences__heroTitle {
+    font-size: 2.6rem;
+  }
+
+  .shield-preferences__tabs {
+    overflow-x: auto;
+  }
+
+  .shield-preferences__tab {
+    flex: 0 0 auto;
+    padding-inline: 18px;
+  }
+
+  .shield-preferences__cardBody {
+    padding: 22px;
+  }
+
+  .shield-preferences__profileBody,
+  .shield-preferences__profileIdentity,
+  .shield-preferences__identityRow,
+  .shield-preferences__footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .shield-preferences__identityLabel {
+    min-width: 0;
+  }
+
+  .shield-preferences__appearanceBody .MuiListItem-root {
+    padding-right: 0 !important;
+  }
+
+  .shield-preferences__appearanceBody .MuiListItemSecondaryAction-root {
+    position: static !important;
+    transform: none !important;
+    margin-top: 16px;
+    padding-left: 0 !important;
+  }
+}

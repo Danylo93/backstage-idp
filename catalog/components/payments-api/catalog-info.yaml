@@ -1,0 +1,30 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: expense-api
+  title: Expense API
+  description: Servico de referencia para o contexto da Squad Expense.
+  tags:
+    - node
+    - expense
+    - argocd
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/kubernetes-label-selector: app.kubernetes.io/name=payments-api
+    dev.azure.com/project-repo: Expense/expense-api
+    dev.azure.com/pipeline: expense-api-ci
+    shield.io/argocd-app-name: expense-api
+    shield.io/argocd-project: shield-backend
+    shield.io/deployment-environments: dev,rc,stg,prd
+    shield.io/gitops-values-path: gitops/apps/backend/expense-api/dev/values.yaml
+spec:
+  type: service
+  lifecycle: production
+  owner: group:default/squad-expense
+  system: expense
+  domain: argo-products
+  providesApis:
+    - expense-api
+  dependsOn:
+    - resource:default/aks-gondor
+    - resource:default/shield-argocd

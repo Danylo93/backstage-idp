@@ -1,0 +1,25 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: shield-platform
+  title: SHIELD Platform
+  description: Portal interno de desenvolvedores baseado em Backstage para padronizar bootstrap, catalogo e operacao.
+  tags:
+    - backstage
+    - idp
+    - squad-plataforma
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/kubernetes-label-selector: app.kubernetes.io/name=shield-platform
+    dev.azure.com/project-repo: Devops/shield-platform-idp
+    dev.azure.com/pipeline: shield-platform-ci
+    shield.io/argocd-app-name: shield-platform
+    shield.io/argocd-project: shield-platform
+    shield.io/deployment-environments: dev,hub,prd
+    shield.io/gitops-values-path: gitops/apps/platform/shield-platform/hub/values.yaml
+spec:
+  type: website
+  lifecycle: production
+  owner: group:default/squad-plataforma
+  system: shield-platform-core
+  domain: argo-platform

@@ -1,0 +1,23 @@
+trigger:
+  branches:
+    include:
+      - main
+      - developer
+      - feature/*
+      - release/*
+
+resources:
+  repositories:
+    - repository: code
+      type: git
+      name: Devops/argo-code
+      ref: refs/heads/main
+
+stages:
+  - template: base-argoit/java/template.yml@code
+    parameters:
+      environment: ${{ values.environment }}
+      javaVersion: '${{ values.javaVersion }}'
+      tier: true
+      imageName: ${{ values.name }}
+      updateHelmValuesEnabled: true

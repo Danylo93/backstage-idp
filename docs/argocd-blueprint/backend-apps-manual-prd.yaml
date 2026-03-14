@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: backend-apps-manual-prd
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - app: sample-api
+            namespace: sample-team
+  template:
+    metadata:
+      name: "{{app}}-prd"
+      labels:
+        shield.env: prd
+        shield.cluster: asgard
+    spec:
+      project: shield-backend
+      source:
+        repoURL: https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+        targetRevision: main
+        path: "gitops/apps/backend/{{app}}/prd"
+      destination:
+        server: https://asgard.cluster.local
+        namespace: "{{namespace}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true

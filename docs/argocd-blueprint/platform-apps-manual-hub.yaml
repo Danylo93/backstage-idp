@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-apps-manual-hub
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - app: shield-platform-idp
+            namespace: platform-system
+  template:
+    metadata:
+      name: "{{app}}-hub"
+      labels:
+        shield.env: hub
+        shield.cluster: wakanda
+    spec:
+      project: shield-platform
+      source:
+        repoURL: https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+        targetRevision: main
+        path: "gitops/apps/platform/{{app}}/hub"
+      destination:
+        server: https://wakanda.cluster.local
+        namespace: "{{namespace}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true

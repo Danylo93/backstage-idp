@@ -1,0 +1,266 @@
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: argo-squads
+  description: Agrupador principal das squads da Argo usadas como ownership no catalogo.
+spec:
+  type: organization
+  profile:
+    displayName: Argo Squads
+  children:
+    - squad-projetos
+    - squad-phoenix
+    - squad-expense
+    - squad-aereo
+    - squad-terrestre
+    - squad-plataforma
+    - squad-bugs
+    - devops-team
+    - shield-admins
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: squad-projetos
+  description: 'PO: Maria Maximo | TL: Rodrigo Lins | QA: Aline Pereira'
+spec:
+  type: squad
+  parent: argo-squads
+  profile:
+    displayName: Squad Projetos
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: squad-phoenix
+  description: 'Produto: Cadu | TL: Raphael Rocha | QA: Ligia Martins'
+spec:
+  type: squad
+  parent: argo-squads
+  profile:
+    displayName: Squad Phoenix
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: squad-expense
+  description: 'PO: Julia Tiossi | TL: Danilo Viaro | QA: Anice Quintanilha'
+spec:
+  type: squad
+  parent: argo-squads
+  profile:
+    displayName: Squad Expense
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: squad-aereo
+  description: 'PO: Murillo Almeida | TL: Luiz Omena | QA: Nayane Dionisio'
+spec:
+  type: squad
+  parent: argo-squads
+  profile:
+    displayName: Squad Aereo
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: squad-terrestre
+  description: 'PO: Juliana Del Barco | TL: Edrei Fernandes | QA: Soraia Almeida'
+spec:
+  type: squad
+  parent: argo-squads
+  profile:
+    displayName: Squad Terrestre
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: squad-plataforma
+  description: 'Devops Team | Coordenador: Alan Abreu'
+spec:
+  type: squad
+  parent: argo-squads
+  profile:
+    displayName: Squad Plataforma
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: squad-bugs
+  description: 'TL: Vaga em aberto | QA: Juan Aguiar'
+spec:
+  type: squad
+  parent: argo-squads
+  profile:
+    displayName: Squad Bugs
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: devops-team
+  description: 'Coordenador: Alan Abreu'
+spec:
+  type: team
+  parent: argo-squads
+  profile:
+    displayName: Devops Team
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: shield-admins
+  description: Grupo administrador da SHIELD Platform.
+spec:
+  type: team
+  parent: argo-squads
+  profile:
+    displayName: SHIELD Admins
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: devops
+spec:
+  profile:
+    displayName: Devops Team
+    email: devops@useargo.com
+  memberOf:
+    - squad-plataforma
+    - devops-team
+    - shield-admins
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: danylo
+spec:
+  profile:
+    displayName: Danylo Oliveira
+    email: danylo.oliveira@useargo.com
+  memberOf:
+    - squad-plataforma
+    - devops-team
+    - shield-admins
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: requester-squad-projetos
+spec:
+  profile:
+    displayName: Usuario Squad Projetos
+    email: requester.projetos@shield.internal
+  memberOf:
+    - squad-projetos
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: requester-squad-phoenix
+spec:
+  profile:
+    displayName: Usuario Squad Phoenix
+    email: requester.phoenix@shield.internal
+  memberOf:
+    - squad-phoenix
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: requester-squad-expense
+spec:
+  profile:
+    displayName: Usuario Squad Expense
+    email: requester.expense@shield.internal
+  memberOf:
+    - squad-expense
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: requester-squad-aereo
+spec:
+  profile:
+    displayName: Usuario Squad Aereo
+    email: requester.aereo@shield.internal
+  memberOf:
+    - squad-aereo
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: requester-squad-terrestre
+spec:
+  profile:
+    displayName: Usuario Squad Terrestre
+    email: requester.terrestre@shield.internal
+  memberOf:
+    - squad-terrestre
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: requester-squad-plataforma
+spec:
+  profile:
+    displayName: Usuario Squad Plataforma
+    email: requester.plataforma@shield.internal
+  memberOf:
+    - squad-plataforma
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: requester-squad-bugs
+spec:
+  profile:
+    displayName: Usuario Squad Bugs
+    email: requester.bugs@shield.internal
+  memberOf:
+    - squad-bugs
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: raul-godoy
+spec:
+  profile:
+    displayName: Raul Godoy
+    email: raul.godoy@shield.internal
+  memberOf:
+    - devops-team
+    - shield-admins
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: paulo-silva
+spec:
+  profile:
+    displayName: Paulo Silva
+    email: paulo.silva@shield.internal
+  memberOf:
+    - devops-team
+    - shield-admins
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: alan-abreu
+spec:
+  profile:
+    displayName: Alan Abreu
+    email: alan.abreu@shield.internal
+  memberOf:
+    - devops-team
+    - shield-admins

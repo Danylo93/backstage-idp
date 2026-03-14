@@ -1,0 +1,188 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: dotnet-service
+  title: .NET Service
+  description: Bootstrap de servico .NET com pipeline compartilhado do argo-code/base-argoit.
+  tags:
+    - dotnet
+    - service
+    - azure-devops
+    - devops-team
+spec:
+  owner: group:default/devops-team
+  type: service
+  parameters:
+    - title: Metadados
+      required: [name, owner, system, lifecycle]
+      properties:
+        name:
+          type: string
+          title: Nome do servico
+        description:
+          type: string
+          title: Descricao do ativo
+          default: .NET service bootstrapped by SHIELD Platform
+        owner:
+          type: string
+          title: Owner (Squad)
+          description: Selecione a squad da Argo que sera dona do componente.
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              - kind: Group
+                spec.type: squad
+        system:
+          type: string
+          title: System
+          description: Associe o componente ao system correto do catalogo.
+          ui:field: EntityPicker
+          ui:options:
+            allowArbitraryValues: false
+            catalogFilter:
+              - kind: System
+        lifecycle:
+          type: string
+          title: Lifecycle
+          default: experimental
+          enum: [experimental, production]
+    - title: Build
+      required: [dotnetVersion, tier, azureDevOpsProject]
+      properties:
+        dotnetVersion:
+          type: string
+          title: Versao do .NET
+          default: '10.0'
+          enum: ['10.0', '9.0', '8.0']
+        tier:
+          type: string
+          title: Tier
+          default: backend
+          enum: [backend, frontend]
+        azureDevOpsProject:
+          type: string
+          title: Projeto Azure DevOps
+          default: Devops
+          enum:
+            - AQA
+            - Archive
+            - ARGO
+            - Connect
+            - Core
+            - Database
+            - Devops
+            - Distributed Services
+            - Hoovie
+            - Mobile
+            - Phoenix
+            - Root Cause
+            - Serverless
+            - Shared Libraries
+            - Springfield School
+  steps:
+    - id: fetch-base
+      name: Renderizar estrutura
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          environment: dev
+          dotnetVersion: ${{ parameters.dotnetVersion }}
+          tier: ${{ parameters.tier }}
+          azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
+          owner: ${{ parameters.owner }}
+          system: ${{ parameters.system }}
+          lifecycle: ${{ parameters.lifecycle }}
+    - id: publish
+      name: Publicar no Azure Repos
+      action: publish:azure
+      input:
+        repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
+        defaultBranch: developer
+        gitCommitMessage: 'chore(scaffolder): bootstrap ${{ parameters.name }}'
+    - id: bootstrap-branches
+      name: Criar branches do repositorio
+      action: azure:repo:bootstrap-branches
+      input:
+        repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
+        sourceBranch: developer
+        defaultBranch: developer
+        mainBranch: main
+        featureBranch: feature/bootstrap
+        releaseBranch: release/bootstrap
+    - id: ensure-environments
+      name: Garantir ambientes do Azure DevOps
+      action: azure:project:ensure-environments
+      input:
+        project: ${{ parameters.azureDevOpsProject }}
+        environments: [dev, rc, stg, prd]
+    - id: create-pipeline
+      name: Criar e executar pipeline do Azure
+      action: azure:repo:create-pipeline-and-run
+      input:
+        repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
+        pipelineName: ${{ parameters.name }}
+        yamlPath: /azure-pipelines.yml
+        branchName: developer
+    - id: configure-policies
+      name: Configurar policies das branches
+      action: azure:repo:configure-policies
+      input:
+        repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
+        branches: [main, developer]
+        minimumApproverCount: 1
+        allowRequestorsToApprove: true
+        blockLastPusherApproval: false
+        allowCompletionWithRejectsOrWaits: false
+        resetOnSourcePush: false
+        requireCommentResolution: true
+        allowBasicNoFastForward: true
+        allowSquash: true
+        allowRebase: false
+        allowRebaseMerge: false
+        automaticReviewerPrincipalNames:
+          - '[argosolutions]\Argo DevSecOps'
+          - '[argosolutions]\Argo Infra'
+        automaticReviewerRequired: false
+        buildValidationPipelineId: '${{ steps["create-pipeline"].output.pipelineId or "" }}'
+    - id: gitops
+      name: Preparar argo-gitops
+      action: azure:gitops:bootstrap
+      input:
+        repoUrl: dev.azure.com?organization=argosolutions&project=Devops&repo=argo-gitops
+        serviceName: ${{ parameters.name }}
+        tier: ${{ parameters.tier }}
+        owner: ${{ parameters.owner }}
+        projectContext: ${{ parameters.system }}
+        imageRepository: acrwakandause2hubiszw.azurecr.io/${{ parameters.name }}
+        telemetryInjectionAnnotation: instrumentation.opentelemetry.io/inject-dotnet
+        gitAuthorName: ArgoIT Devops
+        gitAuthorEmail: devopsacesso@useargo.com
+    - id: register
+      name: Registrar catalog-info no Catalog
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+  output:
+    links:
+      - title: Abrir no catalogo
+        entityRef: ${{ steps.register.output.entityRef }}
+      - title: Abrir catalog-info registrado
+        url: ${{ steps.register.output.catalogInfoUrl }}
+      - title: Abrir repo no Azure Repos
+        url: ${{ steps.publish.output.repoContentsUrl }}
+      - title: Abrir pipeline no Azure DevOps
+        url: ${{ steps.create-pipeline.output.pipelineUrl }}
+      - title: Abrir primeira execucao
+        url: ${{ steps.create-pipeline.output.runUrl }}
+      - title: Branch padrao
+        url: ${{ steps.publish.output.repoContentsUrl }}?version=GB${{ steps.bootstrap-branches.output.defaultBranch }}
+      - title: Policies da main
+        url: ${{ steps.publish.output.repoContentsUrl }}/branches?name=main
+      - title: Abrir values no argo-gitops
+        url: ${{ steps.gitops.output.valuesUrl }}
+      - title: Abrir PR no argo-gitops
+        url: ${{ steps.gitops.output.pullRequestUrl }}

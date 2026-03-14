@@ -1,0 +1,198 @@
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: argo-platform
+  title: Argo Platform
+  description: Dominio que agrupa a plataforma interna, DevOps e automacoes compartilhadas.
+spec:
+  owner: group:default/squad-plataforma
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: argo-products
+  title: Argo Products
+  description: Dominio que agrupa os produtos e contextos de negocio das squads da Argo.
+spec:
+  owner: group:default/argo-squads
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: shield-platform-core
+  title: SHIELD Platform Core
+  description: Plataforma interna de engenharia, templates, catalogo e operacao compartilhada da Argo.
+spec:
+  owner: group:default/squad-plataforma
+  domain: argo-platform
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: projetos
+  title: Squad Projetos
+  description: Contexto de produtos e entregas operados pela Squad Projetos.
+spec:
+  owner: group:default/squad-projetos
+  domain: argo-products
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: phoenix
+  title: Squad Phoenix
+  description: Contexto do produto Phoenix e seus servicos associados.
+spec:
+  owner: group:default/squad-phoenix
+  domain: argo-products
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: expense
+  title: Squad Expense
+  description: Contexto de despesas, aprovacoes e fluxos operados pela Squad Expense.
+spec:
+  owner: group:default/squad-expense
+  domain: argo-products
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: aereo
+  title: Squad Aereo
+  description: Contexto de produtos e servicos do vertical aereo.
+spec:
+  owner: group:default/squad-aereo
+  domain: argo-products
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: terrestre
+  title: Squad Terrestre
+  description: Contexto de produtos e servicos do vertical terrestre.
+spec:
+  owner: group:default/squad-terrestre
+  domain: argo-products
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: bugs
+  title: Squad Bugs
+  description: Contexto de manutencao corretiva, qualidade e sustentacao.
+spec:
+  owner: group:default/squad-bugs
+  domain: argo-products
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: expense-api
+  title: Expense API
+  description: API de referencia para o contexto da Squad Expense.
+  tags:
+    - rest
+    - expense
+spec:
+  type: openapi
+  lifecycle: production
+  owner: group:default/squad-expense
+  system: expense
+  definition: |
+    openapi: 3.0.3
+    info:
+      title: Expense API
+      version: 1.0.0
+    paths:
+      /expenses:
+        post:
+          summary: Create expense workflow
+          responses:
+            '202':
+              description: Accepted
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: phoenix-api
+  title: Phoenix API
+  description: API de referencia para o contexto da Squad Phoenix.
+  tags:
+    - rest
+    - phoenix
+spec:
+  type: openapi
+  lifecycle: production
+  owner: group:default/squad-phoenix
+  system: phoenix
+  definition: |
+    openapi: 3.0.3
+    info:
+      title: Phoenix API
+      version: 1.0.0
+    paths:
+      /workflows:
+        post:
+          summary: Create phoenix workflow
+          responses:
+            '201':
+              description: Session created
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: aks-gondor
+  title: AKS Gondor
+  description: Cluster AKS para ambiente dev.
+  tags:
+    - aks
+    - dev
+spec:
+  type: kubernetes-cluster
+  owner: group:default/squad-plataforma
+  system: shield-platform-core
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: shield-argocd
+  title: SHIELD Argo CD
+  description: Control plane GitOps usado para sincronizacao de workloads.
+  tags:
+    - argocd
+    - gitops
+spec:
+  type: gitops-control-plane
+  owner: group:default/squad-plataforma
+  system: shield-platform-core
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: shield-azure-devops
+  title: SHIELD Azure DevOps
+  description: Organizacao Azure DevOps preparada para repositorios e pipelines.
+  tags:
+    - azure-devops
+spec:
+  type: devops-organization
+  owner: group:default/squad-plataforma
+  system: shield-platform-core
+---
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: expense-api-location
+spec:
+  type: file
+  target: ./components/payments-api/catalog-info.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: phoenix-api-location
+spec:
+  type: file
+  target: ./components/customer-identity-api/catalog-info.yaml

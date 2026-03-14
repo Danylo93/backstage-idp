@@ -1,0 +1,6 @@
+site_name: ${{ values.name }}
+nav:
+  - Overview: docs/index.md
+  - Operations: docs/operations.md
+plugins:
+  - techdocs-core

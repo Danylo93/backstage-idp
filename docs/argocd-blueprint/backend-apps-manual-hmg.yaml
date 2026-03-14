@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: backend-apps-manual-hmg
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - app: sample-api
+            namespace: sample-team
+  template:
+    metadata:
+      name: "{{app}}-hmg"
+      labels:
+        shield.env: hmg
+        shield.cluster: sokovia
+    spec:
+      project: shield-backend
+      source:
+        repoURL: https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+        targetRevision: main
+        path: "gitops/apps/backend/{{app}}/hmg"
+      destination:
+        server: https://sokovia.cluster.local
+        namespace: "{{namespace}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true

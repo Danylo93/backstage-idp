@@ -1,0 +1,60 @@
+{
+  "name": "shield-platform",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "22 || 24"
+  },
+  "scripts": {
+    "preinstall": "node ./scripts/ensure-node.cjs",
+    "start": "node ./scripts/ensure-node.cjs && backstage-cli repo start",
+    "dev": "yarn start",
+    "ci:verify": "node ./scripts/ensure-node.cjs && yarn lint:all && yarn tsc:full && yarn test --watch=false",
+    "build:backend": "node ./scripts/ensure-node.cjs && yarn workspace backend build",
+    "build:all": "node ./scripts/ensure-node.cjs && backstage-cli repo build --all",
+    "build-image": "node ./scripts/ensure-node.cjs && yarn workspace backend build-image",
+    "tsc": "node ./scripts/ensure-node.cjs && tsc",
+    "tsc:full": "node ./scripts/ensure-node.cjs && tsc --skipLibCheck false --incremental false",
+    "clean": "node ./scripts/ensure-node.cjs && backstage-cli repo clean",
+    "test": "node ./scripts/ensure-node.cjs && backstage-cli repo test",
+    "test:all": "node ./scripts/ensure-node.cjs && backstage-cli repo test --coverage",
+    "fix": "node ./scripts/ensure-node.cjs && backstage-cli repo fix",
+    "lint": "node ./scripts/ensure-node.cjs && backstage-cli repo lint --since origin/master",
+    "lint:all": "node ./scripts/ensure-node.cjs && backstage-cli repo lint",
+    "prettier:check": "prettier --check .",
+    "new": "backstage-cli new"
+  },
+  "workspaces": {
+    "packages": [
+      "modules/*",
+      "plugins/*"
+    ]
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.35.4",
+    "@jest/environment-jsdom-abstract": "^30.0.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "jsdom": "^27.1.0",
+    "node-gyp": "^10.0.0",
+    "prettier": "^2.3.2",
+    "typescript": "~5.8.0",
+    "yaml": "^2.8.1"
+  },
+  "resolutions": {
+    "fast-xml-parser": "5.4.1",
+    "@types/react": "^18",
+    "@types/react-dom": "^18"
+  },
+  "prettier": "@backstage/cli/config/prettier",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "packageManager": "yarn@4.4.1"
+}
