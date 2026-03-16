@@ -14,7 +14,7 @@ import DeviceHubOutlinedIcon from '@material-ui/icons/DeviceHubOutlined';
 import LibraryBooksOutlinedIcon from '@material-ui/icons/LibraryBooksOutlined';
 import PlayCircleOutlineRoundedIcon from '@material-ui/icons/PlayCircleOutlineRounded';
 import SettingsEthernetRoundedIcon from '@material-ui/icons/SettingsEthernetRounded';
-import { Content, Header, Link, Page } from '@backstage/core-components';
+import { Content, Link, Page } from '@backstage/core-components';
 
 const useStyles = makeStyles(theme => ({
   page: {
@@ -264,7 +264,7 @@ const useStyles = makeStyles(theme => ({
 const quickActions = [
   {
     title: 'Catalogo central',
-    caption: 'Ownership, systems, squads e componentes da plataforma.',
+    caption: 'Governanca, systems, squads e componentes da plataforma.',
     href: '/catalog',
     action: 'Abrir catalogo',
     icon: <AccountTreeOutlinedIcon />,
@@ -282,7 +282,7 @@ const quickActions = [
   },
   {
     title: 'Documentacao',
-    caption: 'Acesse TechDocs, onboarding e padroes operacionais.',
+    caption: 'Acesse TechDocs, primeiros passos e padroes operacionais.',
     href: '/docs',
     action: 'Abrir documentacao',
     icon: <LibraryBooksOutlinedIcon />,
@@ -336,7 +336,6 @@ export const HomePage = () => {
 
   return (
     <Page themeId="home" className={classes.page}>
-      <Header title="Central de Comando" subtitle="Operacoes da plataforma SHIELD" />
       <Content>
         <div className={classes.shell}>
           <div className={classes.hero}>
@@ -349,7 +348,7 @@ export const HomePage = () => {
             </Typography>
             <Typography variant="body1" className={classes.body}>
               Crie componentes a partir de templates aprovados, acompanhe
-              pipelines, GitOps e ownership em uma unica plataforma interna de
+              pipelines, GitOps e governanca em uma unica plataforma interna de
               desenvolvimento.
             </Typography>
             <div className={classes.heroButtons}>
@@ -438,7 +437,7 @@ export const HomePage = () => {
                   Operacoes centrais
                 </Typography>
                 <Typography className={classes.featureBody}>
-                  Catalogo, software templates, TechDocs, readiness para Azure
+                  Catalogo, templates de software, TechDocs, prontidao para Azure
                   DevOps, Argo CD e Kubernetes sem duplicar funcoes que o
                   Backstage ja resolve.
                 </Typography>
@@ -472,7 +471,7 @@ export const HomePage = () => {
                   Governanca da plataforma
                 </Typography>
                 <Typography className={classes.featureBody}>
-                  Ownership por squad, systems alinhados ao contexto da Argo,
+                  Governanca por squad, systems alinhados ao contexto da Argo,
                   branch policies, environments Azure e links diretos para
                   pipeline e GitOps dentro do proprio IDP.
                 </Typography>

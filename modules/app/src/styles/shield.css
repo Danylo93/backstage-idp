@@ -652,6 +652,51 @@ a {
   border-color: rgba(43, 189, 238, 0.28) !important;
 }
 
+.shield-scaffolder-shell--wizard [class*='Workflow'] {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.shield-scaffolder-shell--wizard .rjsf fieldset,
+.shield-scaffolder-shell--wizard .rjsf .field-object {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 20px;
+}
+
+.shield-scaffolder-shell--wizard .rjsf fieldset > legend,
+.shield-scaffolder-shell--wizard .rjsf .field-object > legend,
+.shield-scaffolder-shell--wizard .rjsf fieldset > .MuiTypography-root,
+.shield-scaffolder-shell--wizard .rjsf .field-object > .MuiTypography-root {
+  grid-column: 1 / -1;
+}
+
+.shield-scaffolder-shell--wizard .rjsf .field-object > .form-group,
+.shield-scaffolder-shell--wizard .rjsf fieldset > .form-group {
+  margin: 0 !important;
+}
+
+.shield-scaffolder-shell--wizard .rjsf .field-object > .form-group:nth-of-type(1),
+.shield-scaffolder-shell--wizard .rjsf .field-object > .form-group:nth-of-type(2),
+.shield-scaffolder-shell--wizard .rjsf fieldset > .form-group:nth-of-type(1),
+.shield-scaffolder-shell--wizard .rjsf fieldset > .form-group:nth-of-type(2) {
+  grid-column: 1 / -1;
+}
+
+.shield-scaffolder-shell--wizard .rjsf .MuiFormHelperText-root,
+.shield-scaffolder-shell--wizard .rjsf .help-block,
+.shield-scaffolder-shell--wizard .rjsf .field-description {
+  margin-top: 10px !important;
+}
+
+@media (max-width: 1200px) {
+  .shield-scaffolder-shell--wizard .rjsf fieldset,
+  .shield-scaffolder-shell--wizard .rjsf .field-object {
+    grid-template-columns: 1fr;
+  }
+}
+
 .shield-scaffolder-shell [class*='ReviewState'] {
   padding: 28px !important;
   background: linear-gradient(180deg, rgba(9, 17, 29, 0.96), rgba(7, 14, 24, 0.96)) !important;

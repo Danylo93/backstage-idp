@@ -1,19 +1,19 @@
-# Operations
+# Operacoes
 
 ## Runbook
 
-1. Validate pipeline status in Azure DevOps.
-2. Confirm GitOps values under `gitops/apps/${{ values.tier }}/${{ values.name }}`.
-3. Verify Argo CD sync and health before promoting environments.
+1. Valide o status da pipeline no Azure DevOps.
+2. Confirme os values do GitOps em `gitops/apps/${{ values.tier }}/${{ values.name }}`.
+3. Verifique sync e health no Argo CD antes de promover ambientes.
 
-## SLO placeholders
+## Marcadores de SLO
 
-- Availability: `99.5%`
+- Disponibilidade: `99.5%`
 - P95 latency: `TBD`
-- Error budget policy: `TBD`
+- Politica de error budget: `TBD`
 
-## Observability
+## Observabilidade
 
-- define dashboards for request rate, error rate and latency
-- expose traces and logs with service name `${{ values.name }}`
-- link alerts to the squad channel responsible for `${{ values.owner }}`
+- defina dashboards para taxa de requisicoes, taxa de erro e latencia
+- exponha traces e logs com o nome de servico `${{ values.name }}`
+- vincule alertas ao canal da squad responsavel por `${{ values.owner }}`

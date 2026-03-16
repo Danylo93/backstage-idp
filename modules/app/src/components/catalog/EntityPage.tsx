@@ -331,7 +331,7 @@ const systemPage = (
       <EntityCatalogGraphCard
         variant="gridItem"
         direction={Direction.TOP_BOTTOM}
-        title="System Diagram"
+        title="Diagrama do sistema"
         height={700}
         relations={[
           RELATION_PART_OF,

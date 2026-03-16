@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Container } from '@material-ui/core';
+import {
+  Container,
+  List,
+  ListItem,
+  ListItemSecondaryAction,
+  ListItemText,
+  Switch,
+} from '@material-ui/core';
 import { EntityRefLinks } from '@backstage/plugin-catalog-react';
 import {
   UserSettingsAuthProviders,
@@ -10,18 +17,21 @@ import {
   UserSettingsThemeToggle,
   useUserProfile,
 } from '@backstage/plugin-user-settings';
+import { useMenuHoverSoundPreference } from '../../utils/menuHoverSoundPreference';
 
 type SettingsTabKey = 'general' | 'auth' | 'flags';
 
 const tabs: Array<{ key: SettingsTabKey; label: string }> = [
-  { key: 'general', label: 'General' },
-  { key: 'auth', label: 'Authentication Providers' },
-  { key: 'flags', label: 'Feature Flags' },
+  { key: 'general', label: 'Geral' },
+  { key: 'auth', label: 'Provedores de autenticacao' },
+  { key: 'flags', label: 'Recursos experimentais' },
 ];
 
 export const ShieldSettingsPage = () => {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>('general');
   const { profile, backstageIdentity, displayName, loading } = useUserProfile();
+  const { menuHoverSoundEnabled, setMenuHoverSoundEnabled } =
+    useMenuHoverSoundPreference();
 
   const identityName =
     displayName || backstageIdentity?.userEntityRef || 'Identidade nao encontrada';
@@ -67,7 +77,7 @@ export const ShieldSettingsPage = () => {
             <div className="shield-preferences__grid">
               <section className="shield-preferences__card shield-preferences__card--profile">
                 <div className="shield-preferences__cardHeader">
-                  <span>Profile</span>
+                  <span>Perfil</span>
                 </div>
                 <div className="shield-preferences__cardBody shield-preferences__profileBody">
                   <div className="shield-preferences__profileIdentity">
@@ -82,7 +92,7 @@ export const ShieldSettingsPage = () => {
                         <div className="shield-preferences__profileEmail">{profile.email}</div>
                       ) : null}
                       <div className="shield-preferences__profileHint">
-                        Access Level: Level 7 Clearance
+                        Nivel de acesso: Liberacao nivel 7
                       </div>
                     </div>
                   </div>
@@ -94,37 +104,54 @@ export const ShieldSettingsPage = () => {
 
               <section className="shield-preferences__card shield-preferences__card--appearance">
                 <div className="shield-preferences__cardHeader">
-                  <span>Appearance</span>
+                  <span>Aparencia</span>
                 </div>
                 <div className="shield-preferences__cardBody shield-preferences__appearanceBody">
                   <UserSettingsThemeToggle />
                   <UserSettingsPinToggle />
+                  <List>
+                    <ListItem>
+                      <ListItemText
+                        primary="Som dos menus"
+                        secondary="Ativa o efeito sonoro digital ao passar o mouse nos menus da plataforma."
+                      />
+                      <ListItemSecondaryAction>
+                        <Switch
+                          edge="end"
+                          color="secondary"
+                          checked={menuHoverSoundEnabled}
+                          onChange={(_, checked) => setMenuHoverSoundEnabled(checked)}
+                          inputProps={{
+                            'aria-label': 'Ativar ou desativar som dos menus',
+                          }}
+                        />
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  </List>
                 </div>
               </section>
 
               <section className="shield-preferences__card shield-preferences__card--identity">
                 <div className="shield-preferences__cardHeader">
-                  <span>Backstage Identity</span>
+                  <span>Identidade do Backstage</span>
                 </div>
                 <div className="shield-preferences__cardBody shield-preferences__identityBody">
                   {backstageIdentity ? (
                     <>
                       <div className="shield-preferences__identityRow">
-                        <span className="shield-preferences__identityLabel">User Entity</span>
+                        <span className="shield-preferences__identityLabel">Entidade do usuario</span>
                         <div className="shield-preferences__identityValue">
                           <EntityRefLinks entityRefs={[backstageIdentity.userEntityRef]} />
                         </div>
                       </div>
                       <div className="shield-preferences__identityRow">
-                        <span className="shield-preferences__identityLabel">
-                          Ownership Entities
-                        </span>
+                        <span className="shield-preferences__identityLabel">Entidades proprietarias</span>
                         <div className="shield-preferences__identityValue">
                           <EntityRefLinks entityRefs={ownershipRefs} />
                         </div>
                       </div>
                       <div className="shield-preferences__identityMeta">
-                        <span>{ownershipRefs.length} ownership entities</span>
+                        <span>{ownershipRefs.length} entidades proprietarias</span>
                         {profile.email ? <span>{profile.email}</span> : null}
                       </div>
                     </>
@@ -153,8 +180,8 @@ export const ShieldSettingsPage = () => {
 
         <footer className="shield-preferences__footer">
           <div className="shield-preferences__footerGroup">
-            <span>System Status: Optimal</span>
-            <span>Secure Link: Established</span>
+            <span>Status do sistema: Otimo</span>
+            <span>Link seguro: Estabelecido</span>
           </div>
           <div className="shield-preferences__footerGroup shield-preferences__footerGroup--right">
             <span>SHIELD OS v1.38.3</span>

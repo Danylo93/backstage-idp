@@ -227,6 +227,29 @@ export const shieldScaffolderModule = createBackendModule({
 
         scaffolderActions.addActions(
           createTemplateAction({
+            id: 'shield:owner:resolve-system',
+            description:
+              'Derives the Backstage system name from the selected owner squad.',
+            schema: {
+              input: {
+                owner: z =>
+                  z.string({
+                    description:
+                      'Owner entity reference used to resolve the matching system.',
+                  }),
+              },
+              output: {
+                system: z =>
+                  z.string({
+                    description: 'Resolved Backstage system name for the owner.',
+                  }),
+              },
+            },
+            async handler(ctx) {
+              ctx.output('system', resolveSystemFromOwner(ctx.input.owner));
+            },
+          }),
+          createTemplateAction({
             id: 'azure:project:ensure-environments',
             description:
               'Ensures Azure DevOps environments exist in the target project.',
@@ -236,6 +259,13 @@ export const shieldScaffolderModule = createBackendModule({
                 environments: z => z.array(z.string()).optional(),
                 descriptions: z =>
                   z.record(z.string()).optional(),
+                token: z =>
+                  z
+                    .string({
+                      description:
+                        'Optional PAT. When omitted, the action uses AZURE_DEVOPS_PAT.',
+                    })
+                    .optional(),
               },
               output: {
                 environments: z => z.array(z.string()),
@@ -246,8 +276,9 @@ export const shieldScaffolderModule = createBackendModule({
                 project,
                 environments = ['dev', 'rc', 'stg', 'prd'],
                 descriptions = {},
+                token,
               } = ctx.input;
-              const azureToken = process.env.AZURE_DEVOPS_PAT;
+              const azureToken = token ?? process.env.AZURE_DEVOPS_PAT;
               const organization =
                 config.getOptionalString(
                   'shield.integrations.azureDevOps.organization',
@@ -331,6 +362,13 @@ export const shieldScaffolderModule = createBackendModule({
                       description: 'Optional folder for the pipeline.',
                     })
                     .optional(),
+                token: z =>
+                  z
+                    .string({
+                      description:
+                        'Optional PAT. When omitted, the action uses AZURE_DEVOPS_PAT.',
+                    })
+                    .optional(),
               },
               output: {
                 pipelineId: z => z.number(),
@@ -351,8 +389,9 @@ export const shieldScaffolderModule = createBackendModule({
                 yamlPath = '/azure-pipelines.yml',
                 branchName = 'developer',
                 folder = '\\',
+                token,
               } = ctx.input;
-              const azureToken = process.env.AZURE_DEVOPS_PAT;
+              const azureToken = token ?? process.env.AZURE_DEVOPS_PAT;
               const normalizedFolder =
                 !folder || folder.trim() === '' || folder.trim() === '/'
                   ? '\\'
@@ -386,11 +425,11 @@ export const shieldScaffolderModule = createBackendModule({
               const sharedTemplatesProject =
                 config.getOptionalString(
                   'shield.integrations.azureDevOps.defaultProject',
-                ) ?? 'Devops';
+                ) ?? 'Root Cause';
               const sharedTemplatesRepo =
                 config.getOptionalString(
                   'shield.integrations.azureDevOps.templatesRepo',
-                ) ?? 'argo-code';
+                ) ?? 'poc-argo-code';
               const repository = await gitApi.getRepository(repo, project);
 
               if (!repository?.id) {
@@ -820,6 +859,13 @@ export const shieldScaffolderModule = createBackendModule({
                 automaticReviewerRequired: z =>
                   z.boolean({ description: 'Whether automatic reviewers are required.' }).optional(),
                 buildValidationPipelineId: z => z.any().optional(),
+                token: z =>
+                  z
+                    .string({
+                      description:
+                        'Optional PAT. When omitted, the action uses AZURE_DEVOPS_PAT.',
+                    })
+                    .optional(),
               },
               output: {
                 branches: z => z.array(z.string()),
@@ -843,10 +889,11 @@ export const shieldScaffolderModule = createBackendModule({
                 automaticReviewerPrincipalNames = [],
                 automaticReviewerRequired = false,
                 buildValidationPipelineId,
+                token,
               } = ctx.input;
               const normalizedBuildValidationPipelineId =
                 normalizeOptionalNumber(buildValidationPipelineId);
-              const azureToken = process.env.AZURE_DEVOPS_PAT;
+              const azureToken = token ?? process.env.AZURE_DEVOPS_PAT;
 
               if (!azureToken) {
                 throw new InputError(
@@ -1003,7 +1050,7 @@ export const shieldScaffolderModule = createBackendModule({
           createTemplateAction({
             id: 'azure:gitops:bootstrap',
             description:
-              'Creates the initial argo-gitops structure at gitops/apps/<tier>/<service>/<environment>/values.yaml for Azure DevOps.',
+              'Creates the initial GitOps structure at gitops/apps/<tier>/<service>/<environment>/values.yaml for Azure DevOps.',
             schema: {
               input: {
                 repoUrl: z =>
@@ -1132,13 +1179,13 @@ export const shieldScaffolderModule = createBackendModule({
                 pullRequestUrl: z =>
                   z
                     .string({
-                      description: 'Azure DevOps web URL for the pull request created in argo-gitops.',
+                      description: 'Azure DevOps web URL for the pull request created in the GitOps repository.',
                     })
                     .optional(),
                 branchName: z =>
                   z
                     .string({
-                      description: 'Feature branch created in argo-gitops.',
+                      description: 'Feature branch created in the GitOps repository.',
                     })
                     .optional(),
               },
@@ -1329,7 +1376,7 @@ export const shieldScaffolderModule = createBackendModule({
 
                   const pullRequest = (await gitApi.createPullRequest(
                     {
-                      title: `Bootstrap ${serviceName} in argo-gitops`,
+                      title: `Bootstrap ${serviceName} in GitOps`,
                       description:
                         `PR criada automaticamente pelo SHIELD Platform para adicionar ${serviceName} em gitops/apps/${tier}/${serviceName}.`,
                       sourceRefName: `refs/heads/${featureBranchName}`,
@@ -1347,7 +1394,7 @@ export const shieldScaffolderModule = createBackendModule({
                     pullRequest.url ??
                     `${cloneUrl}/pullrequest`;
                   ctx.logger.info(
-                    `Created argo-gitops pull request ${featureBranchName} -> ${defaultBranch}: ${pullRequestUrl}`,
+                    `Created GitOps pull request ${featureBranchName} -> ${defaultBranch}: ${pullRequestUrl}`,
                   );
                 }
 

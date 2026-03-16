@@ -21,11 +21,14 @@ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { apis } from './apis';
 import { ShieldSignInPage } from './components/auth/ShieldSignInPage';
+import { AssetCatalogPage } from './components/catalog/AssetCatalogPage';
 import { entityPage } from './components/catalog/EntityPage';
 import { HomePage } from './components/home/HomePage';
 import { PlatformPageLayout } from './components/layout/PlatformPageLayout';
 import { Root } from './components/Root';
 import { ShieldTaskPage } from './components/scaffolder/ShieldTaskPage';
+import { TemplateCatalogPage } from './components/scaffolder/TemplateCatalogPage';
+import { ShieldTemplateWizardPage } from './components/scaffolder/ShieldTemplateWizardPage';
 import { ShieldSettingsPage } from './components/settings/ShieldSettingsPage';
 import { shieldThemes } from './theme';
 
@@ -76,31 +79,17 @@ const routes = (
     <Route path="/home" element={<Navigate to="/" />} />
     <Route
       path="/catalog"
-      element={
-        <PlatformPageLayout
-          pageClassName="shield-catalog-page"
-          eyebrow="Catalogo"
-          title="Todos os Componentes"
-          subtitle="Visualize ownership, sistemas, componentes, squads e relacoes da plataforma em um catalogo unico."
-          chips={['Componentes', 'Systems', 'Squads']}
-        >
-          <CatalogIndexPage
-            initiallySelectedFilter="all"
-            ownerPickerMode="all"
-            pagination
-          />
-        </PlatformPageLayout>
-      }
+      element={<AssetCatalogPage />}
     />
     <Route
       path="/squads"
       element={
         <PlatformPageLayout
           pageClassName="shield-squads-page"
-          eyebrow="Ownership"
+          eyebrow="Governanca"
           title="Squads e Times"
-          subtitle="Visualize squads, times administrativos e ownership organizacional da plataforma em uma visao dedicada."
-          chips={['Squads', 'Teams', 'Ownership']}
+          subtitle="Visualize squads, times administrativos e a governanca organizacional da plataforma em uma visao dedicada."
+          chips={['Squads', 'Times', 'Governanca']}
         >
           <CatalogIndexPage
             initiallySelectedFilter="all"
@@ -124,8 +113,8 @@ const routes = (
           pageClassName="shield-docs-page"
           eyebrow="TechDocs"
           title="Base de Conhecimento"
-          subtitle="Documentacao operacional, onboarding, padroes de plataforma e guias de evolucao centralizados no SHIELD."
-          chips={['Onboarding', 'Padroes', 'Runbooks']}
+          subtitle="Documentacao operacional, primeiros passos, padroes de plataforma e guias de evolucao centralizados no SHIELD."
+          chips={['Primeiros passos', 'Padroes', 'Runbooks']}
         >
           <TechDocsIndexPage ownerPickerMode="all" />
         </PlatformPageLayout>
@@ -146,21 +135,13 @@ const routes = (
     <Route
       path="/create"
       element={
-        <div className="shield-scaffolder-shell shield-scaffolder-shell--list">
-          <PlatformPageLayout
-            pageClassName="shield-templates-page shield-scaffolder-shell__layout"
-            eyebrow="Scaffolder"
-            title="Templates Oficiais"
-            subtitle="Crie repositorios, pipelines, policies e bootstrap GitOps usando os templates homologados da plataforma."
-            chips={['Java', '.NET', 'Python']}
-          >
-            <ScaffolderPage
-              components={{
-                TaskPageComponent: ShieldTaskPage,
-              }}
-            />
-          </PlatformPageLayout>
-        </div>
+        <ScaffolderPage
+          components={{
+            TaskPageComponent: ShieldTaskPage,
+            EXPERIMENTAL_TemplateListPageComponent: TemplateCatalogPage,
+            EXPERIMENTAL_TemplateWizardPageComponent: ShieldTemplateWizardPage,
+          }}
+        />
       }
     />
     <Route
@@ -170,8 +151,8 @@ const routes = (
           pageClassName="shield-api-page"
           eyebrow="APIs"
           title="Contratos e Integracoes"
-          subtitle="Explore APIs registradas, ownership e relacionamentos entre servicos e contratos publicados na plataforma."
-          chips={['OpenAPI', 'Ownership', 'Consumers']}
+          subtitle="Explore APIs registradas, governanca e relacionamentos entre servicos e contratos publicados na plataforma."
+          chips={['OpenAPI', 'Governanca', 'Consumidores']}
         >
           <ApiExplorerPage pagination ownerPickerMode="all" />
         </PlatformPageLayout>
@@ -184,8 +165,8 @@ const routes = (
           pageClassName="shield-register-page"
           eyebrow="Cadastro"
           title="Registrar Componente"
-          subtitle="Conecte um repositorio ou entity file existente para colocar o componente sob monitoramento e governanca da SHIELD Platform."
-          chips={['Catalogo', 'Importacao', 'Tracking']}
+          subtitle="Conecte um repositorio ou arquivo de entidade existente para colocar o componente sob monitoramento e governanca da SHIELD Platform."
+          chips={['Catalogo', 'Importacao', 'Rastreamento']}
         >
           <RequirePermission permission={catalogEntityCreatePermission}>
             <CatalogImportPage />
@@ -204,8 +185,8 @@ const routes = (
           pageClassName="shield-topology-page"
           eyebrow="Topologia"
           title="Mapa da Plataforma"
-          subtitle="Navegue pelas dependencias e relacoes entre componentes, APIs, systems, domains e recursos operacionais."
-          chips={['Dependencias', 'APIs', 'Resources']}
+          subtitle="Navegue pelas dependencias e relacoes entre componentes, APIs, sistemas, dominios e recursos operacionais."
+          chips={['Dependencias', 'APIs', 'Recursos']}
         >
           <CatalogGraphPage
             initialState={{

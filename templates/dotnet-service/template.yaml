@@ -2,8 +2,8 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: dotnet-service
-  title: .NET Service
-  description: Bootstrap de servico .NET com pipeline compartilhado do argo-code/base-argoit.
+  title: Servico .NET
+  description: Bootstrap de servico .NET com pipeline compartilhado do poc-argo-code/base-argoit.
   tags:
     - dotnet
     - service
@@ -14,36 +14,28 @@ spec:
   type: service
   parameters:
     - title: Metadados
-      required: [name, owner, system, lifecycle]
+      required: [name, owner, lifecycle]
       properties:
         name:
           type: string
           title: Nome do servico
+          ui:autofocus: true
         description:
           type: string
           title: Descricao do ativo
-          default: .NET service bootstrapped by SHIELD Platform
+          default: Servico .NET inicializado pela SHIELD Platform
         owner:
           type: string
           title: Owner (Squad)
-          description: Selecione a squad da Argo que sera dona do componente.
+          description: Selecione a squad da Argo. O system sera derivado automaticamente.
           ui:field: OwnerPicker
           ui:options:
             catalogFilter:
               - kind: Group
                 spec.type: squad
-        system:
-          type: string
-          title: System
-          description: Associe o componente ao system correto do catalogo.
-          ui:field: EntityPicker
-          ui:options:
-            allowArbitraryValues: false
-            catalogFilter:
-              - kind: System
         lifecycle:
           type: string
-          title: Lifecycle
+          title: Ciclo de vida
           default: experimental
           enum: [experimental, production]
     - title: Build
@@ -62,7 +54,7 @@ spec:
         azureDevOpsProject:
           type: string
           title: Projeto Azure DevOps
-          default: Devops
+          default: Root Cause
           enum:
             - AQA
             - Archive
@@ -80,6 +72,11 @@ spec:
             - Shared Libraries
             - Springfield School
   steps:
+    - id: resolve-ownership
+      name: Resolver owner/system
+      action: shield:owner:resolve-system
+      input:
+        owner: ${{ parameters.owner }}
     - id: fetch-base
       name: Renderizar estrutura
       action: fetch:template
@@ -93,7 +90,7 @@ spec:
           tier: ${{ parameters.tier }}
           azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
           owner: ${{ parameters.owner }}
-          system: ${{ parameters.system }}
+          system: ${{ steps['resolve-ownership'].output.system }}
           lifecycle: ${{ parameters.lifecycle }}
     - id: publish
       name: Publicar no Azure Repos
@@ -148,20 +145,21 @@ spec:
         automaticReviewerRequired: false
         buildValidationPipelineId: '${{ steps["create-pipeline"].output.pipelineId or "" }}'
     - id: gitops
-      name: Preparar argo-gitops
+      name: Preparar GitOps
       action: azure:gitops:bootstrap
       input:
-        repoUrl: dev.azure.com?organization=argosolutions&project=Devops&repo=argo-gitops
+        repoUrl: dev.azure.com?organization=argosolutions&project=Root%20Cause&repo=poc-argo-gitops
+        defaultBranch: main
         serviceName: ${{ parameters.name }}
         tier: ${{ parameters.tier }}
         owner: ${{ parameters.owner }}
-        projectContext: ${{ parameters.system }}
+        projectContext: ${{ steps['resolve-ownership'].output.system }}
         imageRepository: acrwakandause2hubiszw.azurecr.io/${{ parameters.name }}
         telemetryInjectionAnnotation: instrumentation.opentelemetry.io/inject-dotnet
         gitAuthorName: ArgoIT Devops
         gitAuthorEmail: devopsacesso@useargo.com
     - id: register
-      name: Registrar catalog-info no Catalog
+      name: Registrar catalog-info no catalogo
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
@@ -182,7 +180,7 @@ spec:
         url: ${{ steps.publish.output.repoContentsUrl }}?version=GB${{ steps.bootstrap-branches.output.defaultBranch }}
       - title: Policies da main
         url: ${{ steps.publish.output.repoContentsUrl }}/branches?name=main
-      - title: Abrir values no argo-gitops
+      - title: Abrir values no GitOps
         url: ${{ steps.gitops.output.valuesUrl }}
-      - title: Abrir PR no argo-gitops
+      - title: Abrir PR no GitOps
         url: ${{ steps.gitops.output.pullRequestUrl }}

@@ -4,9 +4,8 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
 import { makeStyles } from '@material-ui/core/styles';
-import { configApiRef, useApi, useRouteRef } from '@backstage/core-plugin-api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { Content, ErrorPanel, Header, Page } from '@backstage/core-components';
-import { scaffolderPlugin } from '@backstage/plugin-scaffolder';
 import { useTaskEventStream, scaffolderApiRef } from '@backstage/plugin-scaffolder-react';
 import {
   DefaultTemplateOutputs,
@@ -162,7 +161,6 @@ export function ShieldTaskPage(props: ShieldTaskPageProps) {
   const classes = useStyles();
   const configApi = useApi(configApiRef);
   const scaffolderApi = useApi(scaffolderApiRef);
-  const templateRouteRef = useRouteRef(scaffolderPlugin.routes.selectedTemplate);
   const taskStream = useTaskEventStream(taskId ?? '');
 
   const [logsVisible, setLogsVisible] = useState(false);
@@ -281,15 +279,14 @@ export function ShieldTaskPage(props: ShieldTaskPageProps) {
 
     const params = new URLSearchParams();
     params.set('formData', JSON.stringify(formData));
+    const namespace = encodeURIComponent(metadata.namespace);
+    const templateName = encodeURIComponent(metadata.name);
 
     navigate({
-      pathname: templateRouteRef({
-        namespace: metadata.namespace,
-        templateName: metadata.name,
-      }),
+      pathname: `/create/templates/${namespace}/${templateName}`,
       search: `?${params.toString()}`,
     });
-  }, [navigate, taskStream.task, templateRouteRef]);
+  }, [navigate, taskStream.task]);
 
   const cancelTask = useCallback(async () => {
     if (!taskId) {

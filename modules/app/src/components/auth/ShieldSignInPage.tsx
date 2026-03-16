@@ -18,23 +18,23 @@ const BOOT_PROGRESS_TICK_MS = 60;
 const BOOT_STEPS = [
   {
     id: 'identity',
-    label: 'Identity Matrix',
-    detail: 'Validating operator profile, ownership graph and secure user entity mapping.',
+    label: 'Matriz de identidade',
+    detail: 'Validando perfil do operador, grafo de governanca e mapeamento seguro da entidade de usuario.',
   },
   {
     id: 'catalog',
-    label: 'Catalog Hydration',
-    detail: 'Rebuilding system, domain, API and dependency overlays for the control board.',
+    label: 'Hidratacao do catalogo',
+    detail: 'Reconstruindo visoes de system, dominio, API e dependencias para o painel de comando.',
   },
   {
     id: 'delivery',
-    label: 'Delivery Telemetry',
-    detail: 'Linking pipelines, GitOps and deployment channels into the SHIELD command mesh.',
+    label: 'Telemetria de entrega',
+    detail: 'Conectando pipelines, GitOps e canais de deploy a malha operacional do SHIELD.',
   },
   {
     id: 'interface',
-    label: 'HUD Materialization',
-    detail: 'Rendering tactical panels, navigation surfaces and mission-critical entry points.',
+    label: 'Materializacao da interface',
+    detail: 'Renderizando paineis taticos, superficies de navegacao e pontos criticos de entrada.',
   },
 ] as const;
 
@@ -97,7 +97,7 @@ class ShieldGuestIdentity implements IdentityApi {
 
   getProfile() {
     if (!this.session) {
-      throw new Error('No session available. Try again after authentication.');
+      throw new Error('Nenhuma sessao disponivel. Tente novamente apos a autenticacao.');
     }
 
     return this.session.profile;
@@ -493,7 +493,7 @@ export const ShieldSignInPage = ({ onSignInSuccess }: SignInPageProps) => {
   const [pendingIdentity, setPendingIdentity] = useState<IdentityApi>();
 
   const footerLabel = useMemo(
-    () => 'SHIELD OS V1.38.3 // TACTICAL_MODULE',
+    () => 'SHIELD OS V1.38.3 // MODULO_TATICO',
     [],
   );
   const loading = stage !== 'idle';
@@ -576,9 +576,9 @@ export const ShieldSignInPage = ({ onSignInSuccess }: SignInPageProps) => {
     <div className={classes.root}>
       <div className={classes.dataStream} />
       <div className={classes.metaInfo}>
-        SYSTEM_STATUS: OPTIMAL
+        STATUS_DO_SISTEMA: OTIMO
         <br />
-        SECURE_LINK: ESTABLISHED
+        LINK_SEGURO: ESTABELECIDO
         <br />
         LAT: 40.7128° N
         <br />
@@ -594,7 +594,7 @@ export const ShieldSignInPage = ({ onSignInSuccess }: SignInPageProps) => {
             </svg>
           </div>
           <h1 className={classes.brandTitle}>S.H.I.E.L.D. IDP</h1>
-          <div className={classes.brandSubtitle}>Tactical Access Portal</div>
+          <div className={classes.brandSubtitle}>Portal tatico de acesso</div>
         </div>
 
         <div className={classes.card}>
@@ -614,7 +614,7 @@ export const ShieldSignInPage = ({ onSignInSuccess }: SignInPageProps) => {
           <form className={classes.form} onSubmit={handleSubmit}>
             <div className={classes.field}>
               <label className={classes.label} htmlFor="agent-id">
-                Agent ID
+                ID do agente
               </label>
               <input
                 id="agent-id"
@@ -628,7 +628,7 @@ export const ShieldSignInPage = ({ onSignInSuccess }: SignInPageProps) => {
 
             <div className={classes.field}>
               <label className={classes.label} htmlFor="access-key">
-                Access Key
+                Chave de acesso
               </label>
               <input
                 id="access-key"
@@ -643,8 +643,8 @@ export const ShieldSignInPage = ({ onSignInSuccess }: SignInPageProps) => {
 
             <div className={classes.biometric}>
               <div>
-                <div className={classes.biometricMuted}>Biometric Verification</div>
-                <div className={classes.biometricActive}>Waiting for scan...</div>
+                <div className={classes.biometricMuted}>Verificacao biometrica</div>
+                <div className={classes.biometricActive}>Aguardando leitura...</div>
               </div>
               <div className={classes.biometricBox}>
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -663,22 +663,22 @@ export const ShieldSignInPage = ({ onSignInSuccess }: SignInPageProps) => {
             {error ? <div className={classes.error}>{error}</div> : null}
 
             <button className={classes.button} type="submit" disabled={loading}>
-              <span>{stage === 'authenticating' ? 'Verifying' : 'Authenticate'}</span>
+              <span>{stage === 'authenticating' ? 'Verificando' : 'Autenticar'}</span>
               <span className={classes.buttonGlint} />
             </button>
 
-            <div className={classes.hint}>Emergency Overload Protocol</div>
+            <div className={classes.hint}>Protocolo de sobrecarga emergencial</div>
           </form>
         </div>
 
         <div className={classes.statuses}>
           <div className={classes.statusItem}>
             <span className={`${classes.statusDot} ${classes.cyan}`} />
-            Neural Link Active
+            Link neural ativo
           </div>
           <div className={classes.statusItem}>
             <span className={`${classes.statusDot} ${classes.green}`} />
-            Encrypted Tunnel
+            Tunel criptografado
           </div>
         </div>
       </main>

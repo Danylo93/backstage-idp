@@ -29,6 +29,7 @@ backend:
 integrations:
   azure:
     - host: dev.azure.com
+      # Export AZURE_DEVOPS_PAT before starting the backend to control Azure Repos access.
       token: ${AZURE_DEVOPS_PAT}
 
 proxy:
@@ -108,10 +109,10 @@ shield:
     azureDevOps:
       host: dev.azure.com
       organization: argosolutions
-      defaultProject: Devops
-      templatesRepo: argo-code
+      defaultProject: Root Cause
+      templatesRepo: poc-argo-code
       templatesBasePath: base-argoit
-      gitOpsRepo: argo-gitops
+      gitOpsRepo: poc-argo-gitops
       catalogProvider: disabled
       branchPolicies:
         automaticReviewerPrincipalNames:

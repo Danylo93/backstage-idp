@@ -11,7 +11,7 @@ type ShieldBootSequenceProps = {
   }>;
 };
 
-const ORBITAL_LABELS = ['secure link', 'catalog mesh', 'hud online'];
+const ORBITAL_LABELS = ['link seguro', 'malha do catalogo', 'hud online'];
 const DECORATIVE_CODE = [
   'shield_core.init()',
   'mesh.sync=stable',
@@ -407,24 +407,24 @@ export const ShieldBootSequence = ({
           <div className={classes.centerCore}>
             <div className={classes.centerGlow} />
             <div>
-              <div className={classes.centerEyebrow}>Shield Link</div>
+              <div className={classes.centerEyebrow}>Link SHIELD</div>
               <div className={classes.centerPercent}>{progressLabel}</div>
-              <div className={classes.centerCaption}>Tactical Sync</div>
+              <div className={classes.centerCaption}>Sincronia tatica</div>
             </div>
           </div>
         </div>
 
         <div className={classes.card}>
-          <div className={classes.eyebrow}>Boot Sequence</div>
-          <div className={classes.title}>Tactical Interface Sync</div>
-          <div className={classes.subtitle}>Central command surface initialization</div>
+          <div className={classes.eyebrow}>Sequencia de inicializacao</div>
+          <div className={classes.title}>Sincronizacao da interface tatica</div>
+          <div className={classes.subtitle}>Inicializacao da superficie de comando central</div>
 
           <div className={classes.progressTrack}>
             <div className={classes.progressBar} style={{ width: `${progress}%` }} />
           </div>
 
           <div className={classes.activeStepWrap}>
-            <div className={classes.activeStepState}>Current Sequence</div>
+            <div className={classes.activeStepState}>Sequencia atual</div>
             <div className={classes.activeStepTitle}>{activeStep.label}</div>
             <div className={classes.activeStepDetail}>{activeStep.detail}</div>
           </div>
@@ -453,7 +453,7 @@ export const ShieldBootSequence = ({
           <div className={classes.footer}>
             <span>{agentId}</span>
             <span className={classes.footerDivider} />
-            <span>secure session</span>
+            <span>sessao segura</span>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useMemo, useState } from 'react';
+import { PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import HomeIcon from '@material-ui/icons/Home';
@@ -19,10 +19,32 @@ import LogoIcon from './LogoIcon';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 import { Link, useLocation } from 'react-router-dom';
+import { useMenuHoverSoundPreference } from '../../utils/menuHoverSoundPreference';
 
 const SIDEBAR_OPEN_WIDTH = 280;
 const SIDEBAR_COLLAPSED_WIDTH = 92;
 const MOBILE_SIDEBAR_WIDTH = 306;
+const MENU_HOVER_SOUND_THROTTLE_MS = 72;
+
+type HoverAudioGraph = {
+  audioContext: AudioContext;
+  masterGain: GainNode;
+  noiseBuffer: AudioBuffer;
+};
+
+type AudioWindow = Window &
+  typeof globalThis & {
+    webkitAudioContext?: {
+      new (): AudioContext;
+    };
+  };
+
+type PageMeta = {
+  eyebrow: string;
+  title: string;
+  path: string;
+  topBarVariant: 'full' | 'compact';
+};
 
 const NAV_SECTIONS = [
   {
@@ -45,6 +67,272 @@ const NAV_SECTIONS = [
     items: [{ icon: SettingsIcon, to: '/settings', label: 'Configuracoes' }],
   },
 ] as const;
+
+const getAudioContextConstructor = () => {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  const audioWindow = window as AudioWindow;
+  return audioWindow.AudioContext ?? audioWindow.webkitAudioContext;
+};
+
+const createHoverNoiseBuffer = (audioContext: AudioContext) => {
+  const frameCount = Math.floor(audioContext.sampleRate * 0.035);
+  const buffer = audioContext.createBuffer(1, frameCount, audioContext.sampleRate);
+  const channel = buffer.getChannelData(0);
+
+  for (let index = 0; index < frameCount; index += 1) {
+    const decay = 1 - index / frameCount;
+    channel[index] = (Math.random() * 2 - 1) * decay;
+  }
+
+  return buffer;
+};
+
+const ensureHoverAudioGraph = ({
+  audioContextRef,
+  masterGainRef,
+  noiseBufferRef,
+}: {
+  audioContextRef: { current: AudioContext | null };
+  masterGainRef: { current: GainNode | null };
+  noiseBufferRef: { current: AudioBuffer | null };
+}): HoverAudioGraph | null => {
+  const AudioContextConstructor = getAudioContextConstructor();
+
+  if (!AudioContextConstructor) {
+    return null;
+  }
+
+  if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+    const audioContext = new AudioContextConstructor();
+    const masterGain = audioContext.createGain();
+
+    masterGain.gain.value = 0.14;
+    masterGain.connect(audioContext.destination);
+
+    audioContextRef.current = audioContext;
+    masterGainRef.current = masterGain;
+    noiseBufferRef.current = createHoverNoiseBuffer(audioContext);
+  }
+
+  if (!audioContextRef.current || !masterGainRef.current || !noiseBufferRef.current) {
+    return null;
+  }
+
+  return {
+    audioContext: audioContextRef.current,
+    masterGain: masterGainRef.current,
+    noiseBuffer: noiseBufferRef.current,
+  };
+};
+
+const playMenuHoverSound = (
+  audioContext: AudioContext,
+  masterGain: GainNode,
+  noiseBuffer: AudioBuffer,
+) => {
+  const startTime = audioContext.currentTime;
+  const lead = audioContext.createOscillator();
+  const leadFilter = audioContext.createBiquadFilter();
+  const leadGain = audioContext.createGain();
+  const accent = audioContext.createOscillator();
+  const accentFilter = audioContext.createBiquadFilter();
+  const accentGain = audioContext.createGain();
+  const shimmer = audioContext.createBufferSource();
+  const shimmerFilter = audioContext.createBiquadFilter();
+  const shimmerGain = audioContext.createGain();
+  const lfo = audioContext.createOscillator();
+  const lfoGain = audioContext.createGain();
+
+  const schedulePulse = (
+    gainNode: GainNode,
+    pulseStart: number,
+    peak: number,
+    attack: number,
+    release: number,
+  ) => {
+    gainNode.gain.setValueAtTime(0.0001, pulseStart);
+    gainNode.gain.exponentialRampToValueAtTime(peak, pulseStart + attack);
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.0001,
+      pulseStart + attack + release,
+    );
+  };
+
+  lead.type = 'sawtooth';
+  lead.frequency.setValueAtTime(2140, startTime);
+  lead.frequency.exponentialRampToValueAtTime(1560, startTime + 0.016);
+  lead.frequency.setValueAtTime(1880, startTime + 0.024);
+  lead.frequency.exponentialRampToValueAtTime(1280, startTime + 0.044);
+  lead.frequency.setValueAtTime(1480, startTime + 0.05);
+  lead.frequency.exponentialRampToValueAtTime(920, startTime + 0.078);
+
+  leadFilter.type = 'bandpass';
+  leadFilter.frequency.setValueAtTime(1980, startTime);
+  leadFilter.frequency.linearRampToValueAtTime(1380, startTime + 0.08);
+  leadFilter.Q.setValueAtTime(11, startTime);
+
+  schedulePulse(leadGain, startTime, 0.034, 0.003, 0.018);
+  schedulePulse(leadGain, startTime + 0.024, 0.026, 0.002, 0.016);
+  schedulePulse(leadGain, startTime + 0.05, 0.02, 0.002, 0.015);
+
+  accent.type = 'square';
+  accent.frequency.setValueAtTime(2680, startTime);
+  accent.frequency.setValueAtTime(2440, startTime + 0.024);
+  accent.frequency.setValueAtTime(2280, startTime + 0.05);
+  accent.detune.setValueAtTime(-18, startTime);
+
+  accentFilter.type = 'highpass';
+  accentFilter.frequency.setValueAtTime(2100, startTime);
+  accentFilter.Q.setValueAtTime(0.9, startTime);
+
+  schedulePulse(accentGain, startTime + 0.002, 0.014, 0.0015, 0.01);
+  schedulePulse(accentGain, startTime + 0.027, 0.011, 0.0015, 0.009);
+  schedulePulse(accentGain, startTime + 0.053, 0.009, 0.0015, 0.008);
+
+  shimmer.buffer = noiseBuffer;
+
+  shimmerFilter.type = 'bandpass';
+  shimmerFilter.frequency.setValueAtTime(4800, startTime);
+  shimmerFilter.Q.setValueAtTime(1.1, startTime);
+
+  schedulePulse(shimmerGain, startTime + 0.001, 0.01, 0.001, 0.008);
+  schedulePulse(shimmerGain, startTime + 0.026, 0.008, 0.001, 0.007);
+  schedulePulse(shimmerGain, startTime + 0.052, 0.006, 0.001, 0.006);
+
+  lfo.type = 'triangle';
+  lfo.frequency.setValueAtTime(32, startTime);
+  lfoGain.gain.setValueAtTime(18, startTime);
+
+  lead.connect(leadFilter);
+  leadFilter.connect(leadGain);
+  leadGain.connect(masterGain);
+
+  accent.connect(accentFilter);
+  accentFilter.connect(accentGain);
+  accentGain.connect(masterGain);
+
+  shimmer.connect(shimmerFilter);
+  shimmerFilter.connect(shimmerGain);
+  shimmerGain.connect(masterGain);
+
+  lfo.connect(lfoGain);
+  lfoGain.connect(lead.frequency);
+
+  lead.start(startTime);
+  accent.start(startTime);
+  shimmer.start(startTime);
+  lfo.start(startTime);
+
+  lead.stop(startTime + 0.088);
+  accent.stop(startTime + 0.082);
+  shimmer.stop(startTime + 0.07);
+  lfo.stop(startTime + 0.088);
+};
+
+const useMenuHoverSound = (enabled: boolean) => {
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
+  const noiseBufferRef = useRef<AudioBuffer | null>(null);
+  const enabledRef = useRef(enabled);
+  const lastTriggeredAtRef = useRef(0);
+
+  useEffect(() => {
+    enabledRef.current = enabled;
+
+    if (enabled || !audioContextRef.current || audioContextRef.current.state !== 'running') {
+      return;
+    }
+
+    void audioContextRef.current.suspend().catch(() => undefined);
+  }, [enabled]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const unlockAudio = () => {
+      if (!enabledRef.current) {
+        return;
+      }
+
+      const graph = ensureHoverAudioGraph({
+        audioContextRef,
+        masterGainRef,
+        noiseBufferRef,
+      });
+
+      if (!graph || graph.audioContext.state !== 'suspended') {
+        return;
+      }
+
+      void graph.audioContext.resume().catch(() => undefined);
+    };
+
+    window.addEventListener('pointerdown', unlockAudio, { passive: true });
+    window.addEventListener('keydown', unlockAudio);
+
+    return () => {
+      window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+
+      const audioContext = audioContextRef.current;
+
+      audioContextRef.current = null;
+      masterGainRef.current = null;
+      noiseBufferRef.current = null;
+
+      if (audioContext && audioContext.state !== 'closed') {
+        void audioContext.close().catch(() => undefined);
+      }
+    };
+  }, []);
+
+  return () => {
+    if (!enabledRef.current) {
+      return;
+    }
+
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+    if (now - lastTriggeredAtRef.current < MENU_HOVER_SOUND_THROTTLE_MS) {
+      return;
+    }
+
+    lastTriggeredAtRef.current = now;
+
+    const graph = ensureHoverAudioGraph({
+      audioContextRef,
+      masterGainRef,
+      noiseBufferRef,
+    });
+
+    if (!graph) {
+      return;
+    }
+
+    const triggerPlayback = () => {
+      playMenuHoverSound(graph.audioContext, graph.masterGain, graph.noiseBuffer);
+    };
+
+    if (graph.audioContext.state === 'running') {
+      triggerPlayback();
+      return;
+    }
+
+    void graph.audioContext
+      .resume()
+      .then(() => {
+        if (graph.audioContext.state === 'running') {
+          triggerPlayback();
+        }
+      })
+      .catch(() => undefined);
+  };
+};
 
 const useStyles = makeStyles(theme => ({
   appFrame: {
@@ -375,6 +663,11 @@ const useStyles = makeStyles(theme => ({
   topBarMeta: {
     minWidth: 0,
   },
+  topBarMetaCompact: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+  },
   topBarEyebrow: {
     color: '#73839a',
     fontSize: 10,
@@ -410,6 +703,9 @@ const useStyles = makeStyles(theme => ({
   topBarPathStrong: {
     color: '#d8e7fa',
     fontWeight: 600,
+  },
+  topBarPathCompact: {
+    marginTop: 0,
   },
   topBarActions: {
     display: 'flex',
@@ -459,13 +755,14 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const getPageMeta = (pathname: string) => {
+const getPageMeta = (pathname: string): PageMeta => {
   if (pathname.startsWith('/catalog/') && pathname.split('/').length >= 5) {
     const name = decodeURIComponent(pathname.split('/')[4] ?? 'Componente');
     return {
       eyebrow: 'Componente',
       title: name,
       path: 'Catalogo / Componente',
+      topBarVariant: 'full',
     };
   }
 
@@ -475,54 +772,63 @@ const getPageMeta = (pathname: string) => {
       eyebrow: 'Operacoes',
       title: 'Central de Comando',
       path: 'Inicio / Operacoes',
+      topBarVariant: 'compact' as const,
     },
     {
       match: (path: string) => path.startsWith('/squads'),
-      eyebrow: 'Ownership',
+      eyebrow: 'Governanca',
       title: 'Squads e Times',
       path: 'Organizacao / Squads',
+      topBarVariant: 'compact' as const,
     },
     {
       match: (path: string) => path.startsWith('/catalog-graph'),
       eyebrow: 'Topologia',
       title: 'Mapa da Plataforma',
       path: 'Catalogo / Topologia',
+      topBarVariant: 'compact' as const,
     },
     {
       match: (path: string) => path.startsWith('/catalog-import'),
       eyebrow: 'Cadastro',
       title: 'Registrar Componente',
       path: 'Catalogo / Registrar',
+      topBarVariant: 'compact' as const,
     },
     {
-      match: (path: string) => path.startsWith('/catalog'),
+      match: (path: string) => path === '/catalog',
       eyebrow: 'Catalogo',
       title: 'Todos os Componentes',
       path: 'Catalogo / Visao geral',
+      topBarVariant: 'compact' as const,
     },
     {
       match: (path: string) => path.startsWith('/create'),
       eyebrow: 'Templates',
       title: 'Templates Oficiais',
-      path: 'Templates / Scaffolder',
+      path: 'Templates / Criacao',
+      topBarVariant: 'compact' as const,
     },
     {
-      match: (path: string) => path.startsWith('/docs'),
+      match: (path: string) => path === '/docs',
       eyebrow: 'TechDocs',
       title: 'Base de Conhecimento',
       path: 'Docs / TechDocs',
+      topBarVariant: 'compact' as const,
     },
     {
       match: (path: string) => path.startsWith('/api-docs'),
       eyebrow: 'APIs',
       title: 'Contratos e Integracoes',
       path: 'APIs / Explorer',
+      topBarVariant: 'compact' as const,
     },
     {
-      match: (path: string) => path.startsWith('/settings'),
+      match: (path: string) => path === '/settings',
       eyebrow: 'Configuracoes',
       title: 'Preferencias',
       path: 'Configuracoes / Preferencias',
+      topBarVariant: 'compact' as const,
     },
   ];
 
@@ -531,6 +837,7 @@ const getPageMeta = (pathname: string) => {
       eyebrow: 'SHIELD',
       title: 'Plataforma',
       path: 'SHIELD / Plataforma',
+      topBarVariant: 'full',
     }
   );
 };
@@ -550,6 +857,7 @@ type SidebarNavigationProps = {
   pathname: string;
   onToggle: () => void;
   onNavigate: () => void;
+  onInteractionCue: () => void;
   onCloseMobile?: () => void;
   mobile: boolean;
 };
@@ -561,6 +869,7 @@ const SidebarNavigation = ({
   pathname,
   onToggle,
   onNavigate,
+  onInteractionCue,
   onCloseMobile,
   mobile,
 }: SidebarNavigationProps) => {
@@ -601,6 +910,8 @@ const SidebarNavigation = ({
           type="button"
           className={classes.toggleButton}
           onClick={onToggle}
+          onMouseEnter={onInteractionCue}
+          onFocus={onInteractionCue}
           aria-label={toggleAriaLabel}
         >
           {toggleIcon}
@@ -633,6 +944,8 @@ const SidebarNavigation = ({
                     className={className}
                     title={!expanded ? item.label : undefined}
                     aria-label={item.label}
+                    onMouseEnter={onInteractionCue}
+                    onFocus={onInteractionCue}
                     onClick={() => {
                       onNavigate();
                       onCloseMobile?.();
@@ -677,6 +990,8 @@ const SidebarNavigation = ({
               to="/settings"
               className={classes.userAction}
               aria-label="Abrir configuracoes"
+              onMouseEnter={onInteractionCue}
+              onFocus={onInteractionCue}
               onClick={() => {
                 onNavigate();
                 onCloseMobile?.();
@@ -696,11 +1011,14 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
   const location = useLocation();
   const identityApi = useApi(identityApiRef);
   const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'));
+  const { menuHoverSoundEnabled } = useMenuHoverSoundPreference();
   const [userEmail, setUserEmail] = useState('danylo.oliveira@useargo.com');
   const [userLabel, setUserLabel] = useState('Danylo Oliveira');
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const triggerMenuHoverSound = useMenuHoverSound(menuHoverSoundEnabled);
   const pageMeta = getPageMeta(location.pathname);
+  const compactTopBar = pageMeta.topBarVariant === 'compact';
 
   useEffect(() => {
     let active = true;
@@ -808,6 +1126,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             pathname={location.pathname}
             onToggle={() => setSidebarExpanded(previous => !previous)}
             onNavigate={handleSidebarNavigate}
+            onInteractionCue={triggerMenuHoverSound}
             mobile={false}
           />
         </aside>
@@ -829,6 +1148,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               pathname={location.pathname}
               onToggle={() => setMobileSidebarOpen(false)}
               onNavigate={handleSidebarNavigate}
+              onInteractionCue={triggerMenuHoverSound}
               onCloseMobile={() => setMobileSidebarOpen(false)}
               mobile
             />
@@ -844,16 +1164,29 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 type="button"
                 className={classes.topBarMenuButton}
                 onClick={handleTopBarToggle}
+                onMouseEnter={triggerMenuHoverSound}
+                onFocus={triggerMenuHoverSound}
                 aria-label={topBarToggleAriaLabel}
               >
                 {topBarToggleIcon}
               </button>
             ) : null}
-            <div className={classes.topBarMeta}>
+            <div
+              className={`${classes.topBarMeta} ${
+                compactTopBar ? classes.topBarMetaCompact : ''
+              }`}
+            >
               <div className={classes.topBarEyebrow}>{pageMeta.eyebrow}</div>
-              <div className={classes.topBarTitle}>{pageMeta.title}</div>
-              <div className={classes.topBarPath}>
-                Caminho atual: <span className={classes.topBarPathStrong}>{pageMeta.path}</span>
+              {!compactTopBar ? (
+                <div className={classes.topBarTitle}>{pageMeta.title}</div>
+              ) : null}
+              <div
+                className={`${classes.topBarPath} ${
+                  compactTopBar ? classes.topBarPathCompact : ''
+                }`}
+              >
+                {compactTopBar ? 'Navegacao ativa: ' : 'Caminho atual: '}
+                <span className={classes.topBarPathStrong}>{pageMeta.path}</span>
               </div>
             </div>
           </div>
