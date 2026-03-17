@@ -24,6 +24,7 @@ import {
   normalizeOptionalString,
   resolveSystemFromOwner,
 } from './scaffolderUtils';
+import { createSyncTemplatesAction } from './actions/syncTemplatesAction';
 
 const execFileAsync = promisify(execFile);
 const defaultGitOpsEnvironments = ['dev', 'rc', 'stg', 'prd'];
@@ -222,10 +223,11 @@ export const shieldScaffolderModule = createBackendModule({
         scaffolderActions: scaffolderActionsExtensionPoint,
         config: coreServices.rootConfig,
       },
-      async init({ scaffolderActions, config }) {
+      async init({ scaffolderActions, config, logger }) {
         const integrations = ScmIntegrations.fromConfig(config);
 
         scaffolderActions.addActions(
+          createSyncTemplatesAction({ logger }),
           createTemplateAction({
             id: 'shield:owner:resolve-system',
             description:

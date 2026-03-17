@@ -71,6 +71,24 @@ spec:
             - Serverless
             - Shared Libraries
             - Springfield School
+    - title: Secrets GitOps (Vault)
+      properties:
+        vaultVariables:
+          type: array
+          title: Variaveis do Vault
+          description: Adicione variaveis como DATABASE_URL, DATABASE_HOST e DATABASE_PASSWORD
+          items:
+            type: object
+            required: [name, value]
+            properties:
+              name:
+                type: string
+                title: Variavel
+                description: Exemplo DATABASE_URL
+              value:
+                type: string
+                title: Valor
+                ui:field: Secret
   steps:
     - id: resolve-ownership
       name: Resolver owner/system
@@ -158,6 +176,30 @@ spec:
         telemetryInjectionAnnotation: instrumentation.opentelemetry.io/inject-python
         gitAuthorName: ArgoIT Devops
         gitAuthorEmail: devopsacesso@useargo.com
+    - id: write-gitops-secrets-to-vault-dev
+      name: Salvar secrets do GitOps no Vault dev
+      action: vault:secrets:write
+      input:
+        path: dev/${{ steps['resolve-ownership'].output.system }}/${{ parameters.name }}
+        data: ${{ parameters.vaultVariables }}
+    - id: write-gitops-secrets-to-vault-rc
+      name: Salvar secrets do GitOps no Vault rc
+      action: vault:secrets:write
+      input:
+        path: rc/${{ steps['resolve-ownership'].output.system }}/${{ parameters.name }}
+        data: ${{ parameters.vaultVariables }}
+    - id: write-gitops-secrets-to-vault-stg
+      name: Salvar secrets do GitOps no Vault stg
+      action: vault:secrets:write
+      input:
+        path: stg/${{ steps['resolve-ownership'].output.system }}/${{ parameters.name }}
+        data: ${{ parameters.vaultVariables }}
+    - id: write-gitops-secrets-to-vault-prd
+      name: Salvar secrets do GitOps no Vault prd
+      action: vault:secrets:write
+      input:
+        path: prd/${{ steps['resolve-ownership'].output.system }}/${{ parameters.name }}
+        data: ${{ parameters.vaultVariables }}
     - id: register
       name: Registrar catalog-info no catalogo
       action: catalog:register

@@ -1,0 +1,43 @@
+# app-config.local.yaml.example
+# ================================================
+# Exemplo de configuração LOCAL para desenvolvimento
+# 
+# NÃO FAZER COMMIT DESTE ARQUIVO com dados reais!
+# Copie, renomeie para app-config.local.yaml e customize
+#
+# Para usar:
+#   yarn dev --config app-config.yaml --config app-config.local.yaml
+# ================================================
+
+# ============================================================================
+# OPÇÃO 1: Usar Vault Local em Dev Mode (Recomendado para Dev)
+# ============================================================================
+vault:
+  endpoint: http://localhost:8200
+  authMethod: token
+  token: hvs.CAESIBEoAgCQXw0FeGVqIvK3K...  # Copiar do: vault server -dev
+  namespace:
+  organization:
+
+# ============================================================================
+# OPÇÃO 2: Usar Vault de Produção com OIDC (Se tiver acesso)
+# ============================================================================
+# vault:
+#   endpoint: https://tiopatinhas.argoit.net.br
+#   authMethod: oidc
+#   oidc:
+#     role: backstage
+#     provider: argo-devops
+#   namespace: argo
+#   organization: minha-org
+#   # token: opcional para fallback
+
+# ============================================================================
+# OPÇÃO 3: Usar Vault de Produção com Token (Não Recomendado)
+# ============================================================================
+# vault:
+#   endpoint: https://tiopatinhas.argoit.net.br
+#   authMethod: token
+#   token: hvs.CAESIBEoAgCQXw0FeGVqIvK3K...
+#   namespace: argo
+#   organization: minha-org

@@ -1,16 +1,15 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: dotnet-service
-  title: Servico .NET
-  description: Bootstrap de servico .NET com pipeline compartilhado do poc-argo-code/base-argoit.
+  name: create-component-with-secrets
+  title: Criar Componente com Secrets
+  description: Cria um novo componente e grava secrets de GitOps no Vault durante o scaffolding.
   tags:
-    - dotnet
-    - service
-    - azure-devops
+    - java
+    - spring
     - devops-team
 spec:
-  owner: group:default/devops-team
+  owner: group:default/platform-team
   type: service
   parameters:
     - title: Metadados
@@ -23,7 +22,7 @@ spec:
         description:
           type: string
           title: Descricao do ativo
-          default: Servico .NET inicializado pela SHIELD Platform
+          default: Servico Java inicializado pela SHIELD Platform
         owner:
           type: string
           title: Owner (Squad)
@@ -39,13 +38,13 @@ spec:
           default: experimental
           enum: [experimental, production]
     - title: Build
-      required: [dotnetVersion, tier, azureDevOpsProject]
+      required: [javaVersion, tier, azureDevOpsProject]
       properties:
-        dotnetVersion:
+        javaVersion:
           type: string
-          title: Versao do .NET
-          default: '10.0'
-          enum: ['10.0', '9.0', '8.0']
+          title: Versao do Java
+          default: '25'
+          enum: ['25', '24', '21', '17']
         tier:
           type: string
           title: Tier
@@ -72,23 +71,37 @@ spec:
             - Shared Libraries
             - Springfield School
     - title: Secrets GitOps (Vault)
+      required: [vaultSecretPath]
       properties:
-        vaultVariables:
-          type: array
-          title: Variaveis do Vault
-          description: Adicione variaveis como DATABASE_URL, DATABASE_HOST e DATABASE_PASSWORD
-          items:
-            type: object
-            required: [name, value]
-            properties:
-              name:
-                type: string
-                title: Variavel
-                description: Exemplo DATABASE_URL
-              value:
-                type: string
-                title: Valor
-                ui:field: Secret
+        writeGitopsSecrets:
+          type: boolean
+          title: Gravar secrets no Vault
+          default: true
+          description: Quando habilitado, os secrets abaixo sao salvos no Vault durante a criacao.
+        vaultSecretPath:
+          type: string
+          title: Caminho do secret no Vault
+          description: "Exemplo KV v2: secret/data/gitops/meu-servico"
+          default: secret/data/gitops
+        acrUsername:
+          type: string
+          title: ACR Username
+        acrPassword:
+          type: string
+          title: ACR Password
+          ui:widget: password
+        appSecret:
+          type: string
+          title: App Secret
+          ui:widget: password
+        databaseUrl:
+          type: string
+          title: Database URL
+        extraSecretsJson:
+          type: string
+          title: Extras em JSON (opcional)
+          description: 'JSON em string para secrets adicionais. Exemplo {"REDIS_URL":"..."}'
+          ui:widget: textarea
   steps:
     - id: resolve-ownership
       name: Resolver owner/system
@@ -104,7 +117,7 @@ spec:
           name: ${{ parameters.name }}
           description: ${{ parameters.description }}
           environment: dev
-          dotnetVersion: ${{ parameters.dotnetVersion }}
+          javaVersion: ${{ parameters.javaVersion }}
           tier: ${{ parameters.tier }}
           azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
           owner: ${{ parameters.owner }}
@@ -173,33 +186,25 @@ spec:
         owner: ${{ parameters.owner }}
         projectContext: ${{ steps['resolve-ownership'].output.system }}
         imageRepository: acrwakandause2hubiszw.azurecr.io/${{ parameters.name }}
-        telemetryInjectionAnnotation: instrumentation.opentelemetry.io/inject-dotnet
+        telemetryInjectionAnnotation: instrumentation.opentelemetry.io/inject-java
         gitAuthorName: ArgoIT Devops
         gitAuthorEmail: devopsacesso@useargo.com
-    - id: write-gitops-secrets-to-vault-dev
-      name: Salvar secrets do GitOps no Vault dev
+    - id: write-gitops-secrets-to-vault
+      name: Salvar secrets do GitOps no Vault
+      if: ${{ parameters.writeGitopsSecrets }}
       action: vault:secrets:write
       input:
-        path: dev/${{ steps['resolve-ownership'].output.system }}/${{ parameters.name }}
-        data: ${{ parameters.vaultVariables }}
-    - id: write-gitops-secrets-to-vault-rc
-      name: Salvar secrets do GitOps no Vault rc
-      action: vault:secrets:write
-      input:
-        path: rc/${{ steps['resolve-ownership'].output.system }}/${{ parameters.name }}
-        data: ${{ parameters.vaultVariables }}
-    - id: write-gitops-secrets-to-vault-stg
-      name: Salvar secrets do GitOps no Vault stg
-      action: vault:secrets:write
-      input:
-        path: stg/${{ steps['resolve-ownership'].output.system }}/${{ parameters.name }}
-        data: ${{ parameters.vaultVariables }}
-    - id: write-gitops-secrets-to-vault-prd
-      name: Salvar secrets do GitOps no Vault prd
-      action: vault:secrets:write
-      input:
-        path: prd/${{ steps['resolve-ownership'].output.system }}/${{ parameters.name }}
-        data: ${{ parameters.vaultVariables }}
+        path: ${{ parameters.vaultSecretPath }}/${{ parameters.name }}
+        data:
+          serviceName: ${{ parameters.name }}
+          project: ${{ parameters.azureDevOpsProject }}
+          gitopsRepo: poc-argo-gitops
+          owner: ${{ parameters.owner }}
+          acrUsername: ${{ parameters.acrUsername }}
+          acrPassword: ${{ parameters.acrPassword }}
+          appSecret: ${{ parameters.appSecret }}
+          databaseUrl: ${{ parameters.databaseUrl }}
+          extraSecretsJson: ${{ parameters.extraSecretsJson }}
     - id: register
       name: Registrar catalog-info no catalogo
       action: catalog:register

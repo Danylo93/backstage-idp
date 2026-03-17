@@ -1,0 +1,102 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: manage-vault-secrets
+  title: Gerenciar Secrets no Vault
+  description: Ler, escrever and deletar secrets no Hashicorp Vault
+  tags:
+    - devops-team
+    - secrets
+    - vault
+spec:
+  owner: group:default/devops-team
+  type: scaffold-action
+  parameters:
+    - title: Operação com Vault
+      required: [operation]
+      properties:
+        operation:
+          type: string
+          title: Operação
+          description: Escolha a operação no Vault
+          enum:
+            - read
+            - write
+            - list
+            - delete
+          enumNames:
+            - 'Ler um secret'
+            - 'Escrever um secret'
+            - 'Listar secrets'
+            - 'Deletar um secret'
+    
+    - title: Configuração do Secret
+      required: [secretPath]
+      properties:
+        secretPath:
+          type: string
+          title: Caminho do Secret
+          description: "Caminho no Vault (ex: secret/data/meu-app) ou apenas (secret/meu-app)"
+          placeholder: secret/data/my-service
+        
+        secretData:
+          type: object
+          title: Dados do Secret
+          description: Apenas para operação de escrita
+          ui:widget: textarea
+          properties:
+            username:
+              type: string
+              title: Username
+            password:
+              type: string
+              title: Password
+              ui:widget: password
+            database:
+              type: string
+              title: Database
+            host:
+              type: string
+              title: Host
+
+  steps:
+    - id: validate-path
+      name: Validar caminho
+      action: debug:log
+      input:
+        message: 'Operação: ${{ parameters.operation }} | Path: ${{ parameters.secretPath }}'
+
+    - id: read-secret
+      name: Ler secret do Vault
+      if: ${{ parameters.operation === "read" }}
+      action: vault:secrets:read
+      input:
+        path: ${{ parameters.secretPath }}
+
+    - id: write-secret
+      name: Escrever secret no Vault
+      if: ${{ parameters.operation === "write" }}
+      action: vault:secrets:write
+      input:
+        path: ${{ parameters.secretPath }}
+        data: ${{ parameters.secretData }}
+
+    - id: list-secrets
+      name: Listar secrets no Vault
+      if: ${{ parameters.operation === "list" }}
+      action: vault:secrets:list
+      input:
+        path: ${{ parameters.secretPath }}
+
+    - id: delete-secret
+      name: Deletar secret do Vault
+      if: ${{ parameters.operation === "delete" }}
+      action: vault:secrets:delete
+      input:
+        path: ${{ parameters.secretPath }}
+
+    - id: status
+      name: Resultado da operação
+      action: debug:log
+      input:
+        message: 'Operação concluída com sucesso!'

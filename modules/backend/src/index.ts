@@ -8,6 +8,7 @@ backend.add(import('@backstage/plugin-proxy-backend'));
 backend.add(import('@backstage/plugin-scaffolder-backend'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-azure'));
 backend.add(import('./modules/scaffolder/shieldScaffolderModule'));
+backend.add(import('./modules/scaffolder/vaultSecretsModule'));
 backend.add(import('@backstage/plugin-techdocs-backend'));
 
 backend.add(import('@backstage/plugin-auth-backend'));

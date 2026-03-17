@@ -101,6 +101,24 @@ kubernetes:
 permission:
   enabled: true
 
+vault:
+  # Produção: Hashicorp Vault com OIDC (Argo-DevOps)
+  endpoint: ${VAULT_ADDR:https://tiopatinhas.argoit.net.br}
+  authMethod: ${VAULT_AUTH_METHOD:oidc}
+  
+  # Configuração de OIDC (Argo-DevOps)
+  oidc:
+    role: ${VAULT_OIDC_ROLE:backstage}
+    provider: ${VAULT_OIDC_PROVIDER:argo-devops}
+    clientId: ${VAULT_OIDC_CLIENT_ID:}
+  
+  # Configuração de Organização e Namespace
+  namespace: ${VAULT_NAMESPACE:argo}
+  organization: ${VAULT_ORGANIZATION:}
+  
+  # Token fallback para ambientes sem OIDC (desenvolvimento)
+  # token: ${VAULT_TOKEN:}
+
 shield:
   branding:
     productName: SHIELD Platform
@@ -118,6 +136,18 @@ shield:
         automaticReviewerPrincipalNames:
           - '[argosolutions]\Argo DevSecOps'
           - '[argosolutions]\Argo Infra'
+    templating:
+      syncRepository:
+        enabled: true
+        url: https://dev.azure.com/argosolutions/Devops/_git/argo-code
+        branch: main
+        localPath: .argo-code-sync
+        pullRequestBranchName: backstage-template-sync
+        templates:
+          - java-service
+          - dotnet-service
+          - python-service
+        autoSync: false
     argoCd:
       baseUrl: https://tower.argoit.net.br
       appNameAnnotation: shield.io/argocd-app-name
