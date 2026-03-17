@@ -28,8 +28,6 @@ spec:
     - resource:default/aks-gondor
     - resource:default/shield-argocd
     - resource:default/shield-azure-devops
-    - resource:default/aks-sokovia
-    - resource:default/aks-asgard
 ---
 apiVersion: backstage.io/v1alpha1
 kind: API

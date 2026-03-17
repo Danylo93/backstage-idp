@@ -29,7 +29,6 @@ backend:
 integrations:
   azure:
     - host: dev.azure.com
-      # Export AZURE_DEVOPS_PAT before starting the backend to control Azure Repos access.
       token: ${AZURE_DEVOPS_PAT}
 
 proxy:
@@ -101,26 +100,6 @@ kubernetes:
 permission:
   enabled: true
 
-vault:
-  # Produção: Hashicorp Vault com OIDC (Argo-DevOps)
-  endpoint: ${VAULT_ADDR:https://tiopatinhas.argoit.net.br}
-  authMethod: ${VAULT_AUTH_METHOD:oidc}
-  
-  # Configuração de OIDC (Argo-DevOps)
-  oidc:
-    role: ${VAULT_OIDC_ROLE:backstage}
-    provider: ${VAULT_OIDC_PROVIDER:argo-devops}
-    clientId: ${VAULT_OIDC_CLIENT_ID:}
-  tokenFile: ${VAULT_TOKEN_FILE:~/.vault-token}
-  
-  # Configuração de Organização e Namespace
-  namespace: ${VAULT_NAMESPACE:argo}
-  organization: ${VAULT_ORGANIZATION:}
-  
-  # Token fallback para ambientes sem OIDC (desenvolvimento)
-  # Após 'vault login -method=oidc', o backend também pode reutilizar ~/.vault-token
-  # token: ${VAULT_TOKEN:}
-
 shield:
   branding:
     productName: SHIELD Platform
@@ -129,27 +108,15 @@ shield:
     azureDevOps:
       host: dev.azure.com
       organization: argosolutions
-      defaultProject: Root Cause
-      templatesRepo: poc-argo-code
+      defaultProject: Devops
+      templatesRepo: argo-code
       templatesBasePath: base-argoit
-      gitOpsRepo: poc-argo-gitops
+      gitOpsRepo: argo-gitops
       catalogProvider: disabled
       branchPolicies:
         automaticReviewerPrincipalNames:
           - '[argosolutions]\Argo DevSecOps'
           - '[argosolutions]\Argo Infra'
-    templating:
-      syncRepository:
-        enabled: true
-        url: https://dev.azure.com/argosolutions/Devops/_git/argo-code
-        branch: main
-        localPath: .argo-code-sync
-        pullRequestBranchName: backstage-template-sync
-        templates:
-          - java-service
-          - dotnet-service
-          - python-service
-        autoSync: false
     argoCd:
       baseUrl: https://tower.argoit.net.br
       appNameAnnotation: shield.io/argocd-app-name

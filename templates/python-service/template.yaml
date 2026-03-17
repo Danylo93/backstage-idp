@@ -2,8 +2,8 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: python-service
-  title: Servico Python
-  description: Bootstrap de servico Python com pipeline compartilhado do poc-argo-code/base-argoit.
+  title: Python Service
+  description: Bootstrap de servico Python com pipeline compartilhado do argo-code/base-argoit.
   tags:
     - python
     - service
@@ -14,28 +14,36 @@ spec:
   type: service
   parameters:
     - title: Metadados
-      required: [name, owner, lifecycle]
+      required: [name, owner, system, lifecycle]
       properties:
         name:
           type: string
           title: Nome do servico
-          ui:autofocus: true
         description:
           type: string
           title: Descricao do ativo
-          default: Servico Python inicializado pela SHIELD Platform
+          default: Python service bootstrapped by SHIELD Platform
         owner:
           type: string
           title: Owner (Squad)
-          description: Selecione a squad da Argo. O system sera derivado automaticamente.
+          description: Selecione a squad da Argo que sera dona do componente.
           ui:field: OwnerPicker
           ui:options:
             catalogFilter:
               - kind: Group
                 spec.type: squad
+        system:
+          type: string
+          title: System
+          description: Associe o componente ao system correto do catalogo.
+          ui:field: EntityPicker
+          ui:options:
+            allowArbitraryValues: false
+            catalogFilter:
+              - kind: System
         lifecycle:
           type: string
-          title: Ciclo de vida
+          title: Lifecycle
           default: experimental
           enum: [experimental, production]
     - title: Build
@@ -54,7 +62,7 @@ spec:
         azureDevOpsProject:
           type: string
           title: Projeto Azure DevOps
-          default: Root Cause
+          default: Devops
           enum:
             - AQA
             - Archive
@@ -71,30 +79,7 @@ spec:
             - Serverless
             - Shared Libraries
             - Springfield School
-    - title: Variaveis GitOps
-      properties:
-        gitopsVariables:
-          type: array
-          title: Variaveis da aplicacao
-          description: Adicione variaveis como DATABASE_URL, DATABASE_HOST e DATABASE_PASSWORD para gravar diretamente no values do GitOps.
-          items:
-            type: object
-            required: [name, value]
-            properties:
-              name:
-                type: string
-                title: Variavel
-                description: Exemplo DATABASE_URL
-              value:
-                type: string
-                title: Valor
-                ui:field: Secret
   steps:
-    - id: resolve-ownership
-      name: Resolver owner/system
-      action: shield:owner:resolve-system
-      input:
-        owner: ${{ parameters.owner }}
     - id: fetch-base
       name: Renderizar estrutura
       action: fetch:template
@@ -108,22 +93,22 @@ spec:
           tier: ${{ parameters.tier }}
           azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
           owner: ${{ parameters.owner }}
-          system: ${{ steps['resolve-ownership'].output.system }}
+          system: ${{ parameters.system }}
           lifecycle: ${{ parameters.lifecycle }}
     - id: publish
       name: Publicar no Azure Repos
       action: publish:azure
       input:
         repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
-        defaultBranch: main
+        defaultBranch: developer
         gitCommitMessage: 'chore(scaffolder): bootstrap ${{ parameters.name }}'
     - id: bootstrap-branches
       name: Criar branches do repositorio
       action: azure:repo:bootstrap-branches
       input:
         repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
-        sourceBranch: main
-        defaultBranch: main
+        sourceBranch: developer
+        defaultBranch: developer
         mainBranch: main
         featureBranch: feature/bootstrap
         releaseBranch: release/bootstrap
@@ -140,13 +125,13 @@ spec:
         repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
         pipelineName: ${{ parameters.name }}
         yamlPath: /azure-pipelines.yml
-        branchName: main
+        branchName: developer
     - id: configure-policies
       name: Configurar policies das branches
       action: azure:repo:configure-policies
       input:
         repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
-        branches: [main]
+        branches: [main, developer]
         minimumApproverCount: 1
         allowRequestorsToApprove: true
         blockLastPusherApproval: false
@@ -163,23 +148,20 @@ spec:
         automaticReviewerRequired: false
         buildValidationPipelineId: '${{ steps["create-pipeline"].output.pipelineId or "" }}'
     - id: gitops
-      name: Preparar GitOps
+      name: Preparar argo-gitops
       action: azure:gitops:bootstrap
       input:
-        repoUrl: dev.azure.com?organization=argosolutions&project=Root%20Cause&repo=poc-argo-gitops
-        defaultBranch: main
+        repoUrl: dev.azure.com?organization=argosolutions&project=Devops&repo=argo-gitops
         serviceName: ${{ parameters.name }}
         tier: ${{ parameters.tier }}
         owner: ${{ parameters.owner }}
-        namespace: ${{ steps['resolve-ownership'].output.system }}
-        projectContext: ${{ steps['resolve-ownership'].output.system }}
+        projectContext: ${{ parameters.system }}
         imageRepository: acrwakandause2hubiszw.azurecr.io/${{ parameters.name }}
         telemetryInjectionAnnotation: instrumentation.opentelemetry.io/inject-python
-        envVariables: ${{ parameters.gitopsVariables }}
         gitAuthorName: ArgoIT Devops
         gitAuthorEmail: devopsacesso@useargo.com
     - id: register
-      name: Registrar catalog-info no catalogo
+      name: Registrar catalog-info no Catalog
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
@@ -200,7 +182,7 @@ spec:
         url: ${{ steps.publish.output.repoContentsUrl }}?version=GB${{ steps.bootstrap-branches.output.defaultBranch }}
       - title: Policies da main
         url: ${{ steps.publish.output.repoContentsUrl }}/branches?name=main
-      - title: Abrir values no GitOps
+      - title: Abrir values no argo-gitops
         url: ${{ steps.gitops.output.valuesUrl }}
-      - title: Abrir PR no GitOps
+      - title: Abrir PR no argo-gitops
         url: ${{ steps.gitops.output.pullRequestUrl }}
