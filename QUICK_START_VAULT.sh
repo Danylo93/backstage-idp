@@ -25,6 +25,9 @@ vault login -method=oidc -path=auth/oidc
 # 3. Verificar token
 vault token lookup -self
 
+# O Backstage reutiliza automaticamente ~/.vault-token
+# Se preferir outro local, exporte VAULT_TOKEN_FILE
+
 # 4. Reinicar Backstage
 yarn dev
 

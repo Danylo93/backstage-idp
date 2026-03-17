@@ -38,6 +38,12 @@ describe('scaffolderUtils', () => {
       labelDepartment: 'engineering',
       servicePort: 8080,
       telemetryInjectionAnnotation: 'instrumentation.opentelemetry.io/inject-java',
+      envVariables: [
+        {
+          name: 'DATABASE_URL',
+          value: 'postgres://payments',
+        },
+      ],
     });
 
     const prdValues = createValuesContent({
@@ -51,10 +57,14 @@ describe('scaffolderUtils', () => {
       labelDepartment: 'engineering',
       servicePort: 8080,
       telemetryInjectionAnnotation: 'instrumentation.opentelemetry.io/inject-java',
+      envVariables: [],
     });
 
     expect(devValues).toContain('host: dev-api-aks.argoit.net.br');
     expect(prdValues).toContain('host: api-aks.argoit.net.br');
     expect(devValues).toContain('repository: acr.azurecr.io/payments-api');
+    expect(devValues).toContain('name: DATABASE_URL');
+    expect(devValues).toContain('value: "postgres://payments"');
+    expect(devValues).not.toContain('ExternalSecret:');
   });
 });

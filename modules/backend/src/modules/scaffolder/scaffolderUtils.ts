@@ -9,7 +9,37 @@ type GitOpsValuesOptions = {
   labelDepartment: string;
   servicePort: number;
   telemetryInjectionAnnotation: string;
+  envVariables?: Array<{
+    name: string;
+    value: string;
+  }>;
 };
+
+function escapeYamlString(value: string) {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function createEnvSection(
+  envVariables: Array<{
+    name: string;
+    value: string;
+  }>,
+) {
+  if (!envVariables.length) {
+    return 'env: []';
+  }
+
+  const entries = envVariables
+    .filter(variable => variable?.name?.trim())
+    .map(variable => {
+      const name = escapeYamlString(variable.name.trim());
+      const value = escapeYamlString(variable.value ?? '');
+
+      return `  - name: ${name}\n    value: "${value}"`;
+    });
+
+  return entries.length ? `env:\n${entries.join('\n')}` : 'env: []';
+}
 
 export function resolveSystemFromOwner(
   ownerRef: string,
@@ -75,8 +105,7 @@ export function createValuesContent(options: GitOpsValuesOptions) {
     options.environment === 'prd'
       ? 'api-aks.argoit.net.br'
       : `${options.environment}-api-aks.argoit.net.br`;
-  const secretName = `${options.serviceName}-${options.environment}`;
-  const secretPath = `${options.environment}/${options.projectContext}/${options.serviceName}`;
+  const envSection = createEnvSection(options.envVariables ?? []);
 
   return `image:
   repository: ${options.imageRepository}
@@ -122,25 +151,7 @@ ingress:
       hosts:
         - ${environmentHost}
 
-createExternalSecret: true
-
-ExternalSecret:
-  name: ${secretName}
-  vaultBackend: vault-backend-${options.environment}
-  refreshInterval: 15s
-  targetName: ${secretName}
-  vaultData:
-    - secretKey: sample-secret
-      remoteRef:
-        key: ${secretPath}
-        property: sample-secret
-
-env:
-  - name: sample-secret
-    valueFrom:
-      secretKeyRef:
-        name: ${secretName}
-        key: sample-secret
+${envSection}
 
 service:
   type: ClusterIP

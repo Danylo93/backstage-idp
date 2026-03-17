@@ -111,12 +111,14 @@ vault:
     role: ${VAULT_OIDC_ROLE:backstage}
     provider: ${VAULT_OIDC_PROVIDER:argo-devops}
     clientId: ${VAULT_OIDC_CLIENT_ID:}
+  tokenFile: ${VAULT_TOKEN_FILE:~/.vault-token}
   
   # Configuração de Organização e Namespace
   namespace: ${VAULT_NAMESPACE:argo}
   organization: ${VAULT_ORGANIZATION:}
   
   # Token fallback para ambientes sem OIDC (desenvolvimento)
+  # Após 'vault login -method=oidc', o backend também pode reutilizar ~/.vault-token
   # token: ${VAULT_TOKEN:}
 
 shield:

@@ -11,10 +11,11 @@ import type { GitPullRequest } from 'azure-devops-node-api/interfaces/GitInterfa
 import type { IPolicyApi } from 'azure-devops-node-api/PolicyApi';
 import type { PolicyConfiguration } from 'azure-devops-node-api/interfaces/PolicyInterfaces';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
+import YAML from 'yaml';
 import {
   buildAzureDevOpsBuildDefinitionUrl,
   buildAzureDevOpsBuildRunUrl,
@@ -28,6 +29,12 @@ import { createSyncTemplatesAction } from './actions/syncTemplatesAction';
 
 const execFileAsync = promisify(execFile);
 const defaultGitOpsEnvironments = ['dev', 'rc', 'stg', 'prd'];
+const backendApplicationSetPathsByEnvironment: Record<string, string> = {
+  dev: 'gitops/application/backend/backend-apps-autosync-dev.yaml',
+  rc: 'gitops/application/backend/backend-apps-manual-rc.yaml',
+  stg: 'gitops/application/backend/backend-apps-manual-stg.yaml',
+  prd: 'gitops/application/backend/backend-apps-manual-prd.yaml',
+};
 
 type ExecGitOptions = {
   args: string[];
@@ -50,6 +57,68 @@ async function pathExists(targetPath: string) {
   } catch {
     return false;
   }
+}
+
+async function upsertBackendApplicationSetEntry(params: {
+  repoPath: string;
+  environment: string;
+  serviceName: string;
+  namespace: string;
+}) {
+  const manifestRelativePath =
+    backendApplicationSetPathsByEnvironment[params.environment];
+
+  if (!manifestRelativePath) {
+    return false;
+  }
+
+  const manifestPath = resolve(params.repoPath, manifestRelativePath);
+
+  if (!(await pathExists(manifestPath))) {
+    return false;
+  }
+
+  const content = await readFile(manifestPath, 'utf8');
+  const document = YAML.parse(content) as {
+    spec?: {
+      generators?: Array<{
+        list?: {
+          elements?: Array<{ app?: string; namespace?: string }>;
+        };
+      }>;
+    };
+  };
+
+  const listGenerator = document.spec?.generators?.find(generator => generator.list);
+  if (!listGenerator?.list) {
+    return false;
+  }
+
+  const elements = Array.isArray(listGenerator.list.elements)
+    ? [...listGenerator.list.elements]
+    : [];
+  const existingEntry = elements.find(entry => entry.app === params.serviceName);
+
+  if (existingEntry) {
+    if (existingEntry.namespace === params.namespace) {
+      return false;
+    }
+
+    existingEntry.namespace = params.namespace;
+  } else {
+    elements.push({
+      app: params.serviceName,
+      namespace: params.namespace,
+    });
+  }
+
+  elements.sort((left, right) =>
+    String(left.app ?? '').localeCompare(String(right.app ?? '')),
+  );
+  listGenerator.list.elements = elements;
+
+  await writeFile(manifestPath, YAML.stringify(document), 'utf8');
+  return true;
 }
 
 async function createAndPushBranch(params: {
@@ -389,7 +458,7 @@ export const shieldScaffolderModule = createBackendModule({
                 repoUrl,
                 pipelineName,
                 yamlPath = '/azure-pipelines.yml',
-                branchName = 'developer',
+                branchName = 'main',
                 folder = '\\',
                 token,
               } = ctx.input;
@@ -699,7 +768,7 @@ export const shieldScaffolderModule = createBackendModule({
               const {
                 repoUrl,
                 sourceBranch = 'main',
-                defaultBranch = 'developer',
+                defaultBranch = 'main',
                 mainBranch = 'main',
                 featureBranch = 'feature/bootstrap',
                 releaseBranch = 'release/bootstrap',
@@ -1129,6 +1198,19 @@ export const shieldScaffolderModule = createBackendModule({
                         'Annotation key used in podAnnotations for OpenTelemetry injection.',
                     })
                     .optional(),
+                envVariables: z =>
+                  z
+                    .array(
+                      z.object({
+                        name: z.string({
+                          description: 'Environment variable name written into values.yaml.',
+                        }),
+                        value: z.string({
+                          description: 'Environment variable value written into values.yaml.',
+                        }),
+                      }),
+                    )
+                    .optional(),
                 defaultBranch: z =>
                   z
                     .string({ description: 'Target branch in the GitOps repository.' })
@@ -1208,6 +1290,7 @@ export const shieldScaffolderModule = createBackendModule({
                 labelDepartment = 'TI',
                 servicePort = 8080,
                 telemetryInjectionAnnotation = 'instrumentation.opentelemetry.io/inject-dotnet',
+                envVariables = [],
                 defaultBranch = 'main',
                 featureBranchName = `feature/${serviceName}`,
                 token,
@@ -1318,9 +1401,19 @@ export const shieldScaffolderModule = createBackendModule({
                         labelDepartment,
                         servicePort,
                         telemetryInjectionAnnotation,
+                        envVariables,
                       }),
                       'utf8',
                     );
+                  }
+
+                  if (tier === 'backend') {
+                    await upsertBackendApplicationSetEntry({
+                      repoPath,
+                      environment,
+                      serviceName,
+                      namespace,
+                    });
                   }
                 }
 

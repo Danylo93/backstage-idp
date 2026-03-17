@@ -3,6 +3,9 @@ import {
   createBackendModule,
   type LoggerService,
 } from '@backstage/backend-plugin-api';
+import { readFile } from 'fs/promises';
+import os from 'os';
+import path from 'path';
 import {
   createTemplateAction,
   scaffolderActionsExtensionPoint,
@@ -27,6 +30,7 @@ type VaultConfig = {
   endpoint: string;
   authMethod: VaultAuthMethod;
   token?: string;
+  tokenFile?: string;
   oidc?: VaultOIDCConfig;
   namespace?: string;
   organization?: string;
@@ -50,6 +54,96 @@ const createNodeVaultClient = require('node-vault') as (config: {
   namespace?: string;
   skipConsoleWarnings?: boolean;
 }) => VaultClient;
+
+function expandHomePath(filePath: string) {
+  if (filePath === '~') {
+    return os.homedir();
+  }
+
+  if (filePath.startsWith('~/') || filePath.startsWith('~\\')) {
+    return path.join(os.homedir(), filePath.slice(2));
+  }
+
+  return filePath;
+}
+
+async function readVaultTokenFromFile(
+  tokenFilePath: string | undefined,
+  logger: LoggerService,
+) {
+  if (!tokenFilePath) {
+    return undefined;
+  }
+
+  const resolvedPath = expandHomePath(tokenFilePath);
+
+  try {
+    const token = (await readFile(resolvedPath, 'utf8')).trim();
+
+    if (!token) {
+      logger.warn(`Arquivo de token do Vault está vazio: ${resolvedPath}`);
+      return undefined;
+    }
+
+    logger.info(`Usando token do Vault obtido em ${resolvedPath}`);
+    return token;
+  } catch (error) {
+    const code =
+      typeof error === 'object' && error && 'code' in error
+        ? String(error.code)
+        : undefined;
+
+    if (code !== 'ENOENT') {
+      logger.warn(
+        `Falha ao ler arquivo de token do Vault ${resolvedPath}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    return undefined;
+  }
+}
+
+async function resolveVaultToken(
+  config: VaultConfig,
+  logger: LoggerService,
+  providedToken?: string,
+): Promise<{ token: string; source: 'input' | 'config' | 'env' | 'file' }> {
+  if (providedToken?.trim()) {
+    return {
+      token: providedToken.trim(),
+      source: 'input',
+    };
+  }
+
+  if (config.token?.trim()) {
+    return {
+      token: config.token.trim(),
+      source: 'config',
+    };
+  }
+
+  if (process.env.VAULT_TOKEN?.trim()) {
+    return {
+      token: process.env.VAULT_TOKEN.trim(),
+      source: 'env',
+    };
+  }
+
+  const tokenFromFile = await readVaultTokenFromFile(config.tokenFile, logger);
+
+  if (tokenFromFile) {
+    return {
+      token: tokenFromFile,
+      source: 'file',
+    };
+  }
+
+  throw new Error(
+    config.authMethod === 'oidc'
+      ? "Nenhum token Vault disponível. Faça login com 'vault login -method=oidc -path=auth/oidc' ou configure VAULT_TOKEN. Também é possível apontar VAULT_TOKEN_FILE para o arquivo de token."
+      : 'Nenhum token Vault disponível. Configure vault.token, VAULT_TOKEN ou VAULT_TOKEN_FILE.',
+  );
+}
 
 function normalizeSecretWriteData(
   input:
@@ -76,48 +170,13 @@ function normalizeSecretWriteData(
 async function createVaultClient(
   config: VaultConfig,
   logger: LoggerService,
+  providedToken?: string,
 ): Promise<VaultClient> {
-  let token = config.token;
+  const { token, source } = await resolveVaultToken(config, logger, providedToken);
 
-  if (config.authMethod === 'oidc' && !config.token) {
-    logger.info(`Autenticando com Vault via OIDC (role: ${config.oidc?.role})...`);
-
-    try {
-      const client = createNodeVaultClient({
-        endpoint: config.endpoint,
-        namespace: config.namespace,
-        skipConsoleWarnings: config.skipConsoleWarnings ?? true,
-      });
-
-      const response = await client.request({
-        method: 'GET',
-        path: `/v1/auth/oidc/oidc_authorization_url_request?role=${config.oidc?.role}`,
-      });
-
-      logger.warn(
-        'OIDC requer autenticação interativa. Use token gerado pelo provider OIDC.',
-      );
-      logger.info(
-        `URL de autorização: ${String(response.data?.authorization_url ?? 'Não disponível em modo dev')}`,
-      );
-
-      token = process.env.VAULT_TOKEN;
-      if (!token) {
-        throw new Error(
-          'OIDC configurado mas VAULT_TOKEN não definido. Configure VAULT_TOKEN ou complete OIDC login interativamente.',
-        );
-      }
-    } catch (error) {
-      logger.warn(
-        `Falha ao usar OIDC: ${error instanceof Error ? error.message : String(error)}. Usando token fallback.`,
-      );
-      token = process.env.VAULT_TOKEN;
-    }
-  }
-
-  if (!token) {
-    throw new Error(
-      'Nenhum token Vault disponível. Configure VAULT_TOKEN ou use OIDC login.',
+  if (config.authMethod === 'oidc') {
+    logger.info(
+      `Usando autenticação Vault via OIDC (role: ${config.oidc?.role ?? 'não definida'}, token via ${source}).`,
     );
   }
 
@@ -198,6 +257,12 @@ function createVaultWriteSecretAction(options: {
               }),
             ),
           ]),
+          token: z
+            .string({
+              description:
+                'Token do Vault obtido via login OIDC do usuario. Quando informado, tem precedencia sobre a configuracao global.',
+            })
+            .optional(),
           options: z
             .object({
               casRequired: z
@@ -218,7 +283,7 @@ function createVaultWriteSecretAction(options: {
     async handler(ctx) {
       logger.info(`Escrevendo secret no Vault: ${ctx.input.path}`);
 
-      const client = await createVaultClient(vaultConfig, logger);
+      const client = await createVaultClient(vaultConfig, logger, ctx.input.token);
       const normalizedData = normalizeSecretWriteData(ctx.input.data);
       const response = await client.write(ctx.input.path, {
         data: normalizedData,
@@ -352,10 +417,14 @@ export const vaultSecretsModule = createBackendModule({
 
         const token =
           vaultConfig.getOptionalString('token') ?? process.env.VAULT_TOKEN;
+        const tokenFile =
+          vaultConfig.getOptionalString('tokenFile') ??
+          process.env.VAULT_TOKEN_FILE ??
+          '~/.vault-token';
 
-        if (authMethod === 'token' && !token) {
+        if (authMethod === 'token' && !token && !tokenFile) {
           logger.error(
-            'Método token configurado mas VAULT_TOKEN não definido. Configure vault.token ou VAULT_TOKEN.',
+            'Método token configurado mas nenhum token foi definido. Configure vault.token, VAULT_TOKEN ou VAULT_TOKEN_FILE.',
           );
           return;
         }
@@ -364,6 +433,7 @@ export const vaultSecretsModule = createBackendModule({
           endpoint,
           authMethod,
           token,
+          tokenFile,
           oidc: oidcConfig,
           namespace,
           organization,

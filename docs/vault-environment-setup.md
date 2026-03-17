@@ -47,6 +47,8 @@ vault login -method=oidc -path=auth/oidc
 vault login -method=oidc -path=auth/oidc role=backstage
 ```
 
+Depois do login, o Vault CLI grava o token em `~/.vault-token`. O backend do Backstage agora reutiliza esse arquivo automaticamente. Se o token estiver em outro local, defina `VAULT_TOKEN_FILE`.
+
 ### 3. Descobrir o Token
 
 ```bash
