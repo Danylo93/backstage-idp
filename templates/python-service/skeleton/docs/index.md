@@ -2,28 +2,28 @@
 
 ${{ values.description }}
 
-## Responsabilidade e contexto
+## Ownership
 
 - Owner: `${{ values.owner }}`
 - System: `${{ values.system }}`
-- Ciclo de vida: `${{ values.lifecycle }}`
+- Lifecycle: `${{ values.lifecycle }}`
 
-## Caminho principal
+## Golden path
 
-- [x] Registro no catalogo via `catalog-info.yaml`
-- [x] OpenAPI rastreada no Backstage
-- [x] TechDocs habilitado com `mkdocs.yml`
-- [x] Values do GitOps esperados em `gitops/apps/${{ values.tier }}/${{ values.name }}`
+- [x] Catalog registration by `catalog-info.yaml`
+- [x] OpenAPI tracked in Backstage
+- [x] TechDocs enabled with `mkdocs.yml`
+- [x] GitOps values expected under `gitops/apps/${{ values.tier }}/${{ values.name }}`
 
 ## Runtime
 
 - Port: `8080`
-- Endpoint de health: `/health`
-- Endpoint de readiness: `/ready`
-- Endpoint de metadata: `/info`
+- Health endpoint: `/health`
+- Readiness endpoint: `/ready`
+- Metadata endpoint: `/info`
 
-## Gates de qualidade
+## Quality gates
 
-- mantenha `catalog-info.yaml`, `mkdocs.yml` e `openapi/openapi.yaml` versionados
-- atualize runbook e SLOs antes de promover para producao
-- conecte dashboards, tracing e alertas antes de habilitar autosync no Argo CD
+- keep `catalog-info.yaml`, `mkdocs.yml` and `openapi/openapi.yaml` versioned
+- update runbook and SLOs before promoting to production
+- wire dashboards, tracing and alerting before enabling autosync in Argo CD

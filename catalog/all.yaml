@@ -13,6 +13,35 @@ metadata:
   name: argo-products
   title: Argo Products
   description: Dominio que agrupa os produtos e contextos de negocio das squads da Argo.
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: aks-sokovia
+  title: AKS Sokovia
+  description: Cluster AKS para ambiente rc.
+  tags:
+    - aks
+    - rc
+spec:
+  type: kubernetes-cluster
+  owner: group:default/squad-plataforma
+  system: shield-platform-core
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: aks-asgard
+  title: AKS Asgard
+  description: Cluster AKS para ambientes stg e prd.
+  tags:
+    - aks
+    - stg
+    - prd
+spec:
+  type: kubernetes-cluster
+  owner: group:default/squad-plataforma
+  system: shield-platform-core
+---
 spec:
   owner: group:default/argo-squads
 ---
@@ -28,6 +57,8 @@ spec:
 ---
 apiVersion: backstage.io/v1alpha1
 kind: System
+    - resource:default/aks-sokovia
+    - resource:default/aks-asgard
 metadata:
   name: projetos
   title: Squad Projetos
@@ -45,6 +76,8 @@ metadata:
 spec:
   owner: group:default/squad-phoenix
   domain: argo-products
+    - resource:default/aks-sokovia
+    - resource:default/aks-asgard
 ---
 apiVersion: backstage.io/v1alpha1
 kind: System
@@ -63,6 +96,8 @@ metadata:
   title: Squad Aereo
   description: Contexto de produtos e servicos do vertical aereo.
 spec:
+    - resource:default/aks-sokovia
+    - resource:default/aks-asgard
   owner: group:default/squad-aereo
   domain: argo-products
 ---
@@ -80,6 +115,8 @@ apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: bugs
+    - resource:default/aks-sokovia
+    - resource:default/aks-asgard
   title: Squad Bugs
   description: Contexto de manutencao corretiva, qualidade e sustentacao.
 spec:
@@ -149,6 +186,35 @@ metadata:
   tags:
     - aks
     - dev
+spec:
+  type: kubernetes-cluster
+  owner: group:default/squad-plataforma
+  system: shield-platform-core
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: aks-sokovia
+  title: AKS Sokovia
+  description: Cluster AKS para ambiente rc.
+  tags:
+    - aks
+    - rc
+spec:
+  type: kubernetes-cluster
+  owner: group:default/squad-plataforma
+  system: shield-platform-core
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: aks-asgard
+  title: AKS Asgard
+  description: Cluster AKS para ambientes stg e prd.
+  tags:
+    - aks
+    - stg
+    - prd
 spec:
   type: kubernetes-cluster
   owner: group:default/squad-plataforma

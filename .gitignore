@@ -54,7 +54,3 @@ e2e-test-report/
 
 # Cache
 .cache/
-
-# Windows ADS artifacts copied into WSL/Linux filesystems
-*:Zone.Identifier
-*Zone.Identifier
