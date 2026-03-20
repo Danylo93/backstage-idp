@@ -1,4 +1,10 @@
 version = 1
 
+test_patterns = ["tests/**"]
+exclude_patterns = ["References/**"]
+
 [[analyzers]]
 name = "csharp"
+
+[[transformers]]
+name = "dotnet-format"

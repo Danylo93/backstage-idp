@@ -18,7 +18,7 @@ spec:
     spec:
       project: shield-platform
       source:
-        repoURL: https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+        repoURL: https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-gitops
         targetRevision: main
         path: "gitops/apps/platform/{{app}}/hub"
       destination:

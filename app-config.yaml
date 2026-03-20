@@ -51,6 +51,15 @@ auth:
         - group:default/devops-team
         - group:default/shield-admins
       dangerouslyAllowOutsideDevelopment: true
+    microsoft:
+      development:
+        clientId: ${AUTH_MICROSOFT_CLIENT_ID}
+        clientSecret: ${AUTH_MICROSOFT_CLIENT_SECRET}
+        tenantId: ${AUTH_MICROSOFT_TENANT_ID}
+        domainHint: ${AUTH_MICROSOFT_TENANT_ID}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
 
 scaffolder:
   defaultAuthor:
@@ -108,10 +117,10 @@ shield:
     azureDevOps:
       host: dev.azure.com
       organization: argosolutions
-      defaultProject: Devops
-      templatesRepo: argo-code
+      defaultProject: Root Cause
+      templatesRepo: poc-argo-code
       templatesBasePath: base-argoit
-      gitOpsRepo: argo-gitops
+      gitOpsRepo: poc-argo-gitops
       catalogProvider: disabled
       branchPolicies:
         automaticReviewerPrincipalNames:

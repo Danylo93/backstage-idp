@@ -3,9 +3,9 @@
 Este blueprint define como usar ArgoCD como runtime plane para os clusters:
 
 - `gondor` (dev)
-- `sokovia` (hmg)
+- `sokovia` (rc)
 - `wakanda` (hub)
-- `asgard` (prd)
+- `asgard` (stg/prd)
 
 ## Fluxo alvo
 
@@ -19,7 +19,8 @@ Este blueprint define como usar ArgoCD como runtime plane para os clusters:
 
 ```text
 gitops/apps/backend/<app>/dev/values.yaml
-gitops/apps/backend/<app>/hmg/values.yaml
+gitops/apps/backend/<app>/rc/values.yaml
+gitops/apps/backend/<app>/stg/values.yaml
 gitops/apps/backend/<app>/prd/values.yaml
 gitops/apps/platform/<app>/hub/values.yaml
 ```
@@ -27,7 +28,8 @@ gitops/apps/platform/<app>/hub/values.yaml
 ## ApplicationSets
 
 - `backend-apps-autosync-dev.yaml`: deploy automático em `gondor`.
-- `backend-apps-manual-hmg.yaml`: deploy manual em `sokovia`.
+- `backend-apps-manual-rc.yaml`: deploy manual em `sokovia`.
+- `backend-apps-manual-stg.yaml`: deploy manual em `asgard`.
 - `backend-apps-manual-prd.yaml`: deploy manual em `asgard`.
 - `platform-apps-manual-hub.yaml`: apps de plataforma no `wakanda`.
 
@@ -50,5 +52,3 @@ Para adotar este blueprint sem quebrar:
 1. Mantenha a estrutura `gitops/apps/backend/...`.
 2. Troque/alimente os YAMLs de `ApplicationSet` da pasta `gitops/application/backend/`.
 3. Garanta que os nomes de ambiente usados no IDP coincidam com os nomes dos arquivos do ApplicationSet.
-
-Se seu IDP ainda escrever `rc/stg`, crie aliases temporários no GitOps (pastas e appsets) enquanto migra para `hmg/hub`.

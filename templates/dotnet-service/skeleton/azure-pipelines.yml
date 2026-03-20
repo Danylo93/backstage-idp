@@ -1,23 +1,24 @@
 trigger:
   branches:
     include:
+      - hotfix/*
       - main
-      - developer
-      - feature/*
       - release/*
+      - develop
+      - feature/*
 
 resources:
   repositories:
-    - repository: code
+    - repository: argo-code
       type: git
-      name: Devops/argo-code
+      name: Root Cause/poc-argo-code
       ref: refs/heads/main
 
+variables:
+  - template: base-argoit/variables/global.yml@argo-code
+
 stages:
-  - template: base-argoit/dotnet/template.yml@code
+  - template: base-argoit/dotnet/template.yml@argo-code
     parameters:
-      environment: ${{ values.environment }}
+      environment: ${{ variables.environment }}
       dotNetVersion: '${{ values.dotnetVersion }}.x'
-      tier: backend
-      imageName: ${{ values.name }}
-      updateHelmValuesEnabled: true

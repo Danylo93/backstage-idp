@@ -14,7 +14,7 @@ spec:
   type: service
   parameters:
     - title: Metadados
-      required: [name, owner, system, lifecycle]
+      required: [name, owner, lifecycle]
       properties:
         name:
           type: string
@@ -32,15 +32,6 @@ spec:
             catalogFilter:
               - kind: Group
                 spec.type: squad
-        system:
-          type: string
-          title: System
-          description: Associe o componente ao system correto do catalogo.
-          ui:field: EntityPicker
-          ui:options:
-            allowArbitraryValues: false
-            catalogFilter:
-              - kind: System
         lifecycle:
           type: string
           title: Lifecycle
@@ -80,6 +71,11 @@ spec:
             - Shared Libraries
             - Springfield School
   steps:
+    - id: resolve-system
+      name: Resolver system a partir do owner
+      action: shield:catalog:resolve-system-from-owner
+      input:
+        owner: ${{ parameters.owner }}
     - id: fetch-base
       name: Renderizar estrutura
       action: fetch:template
@@ -93,22 +89,22 @@ spec:
           tier: ${{ parameters.tier }}
           azureDevOpsProject: ${{ parameters.azureDevOpsProject }}
           owner: ${{ parameters.owner }}
-          system: ${{ parameters.system }}
+          system: ${{ steps['resolve-system'].output.system }}
           lifecycle: ${{ parameters.lifecycle }}
     - id: publish
       name: Publicar no Azure Repos
       action: publish:azure
       input:
         repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
-        defaultBranch: developer
+        defaultBranch: main
         gitCommitMessage: 'chore(scaffolder): bootstrap ${{ parameters.name }}'
     - id: bootstrap-branches
       name: Criar branches do repositorio
       action: azure:repo:bootstrap-branches
       input:
         repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
-        sourceBranch: developer
-        defaultBranch: developer
+        sourceBranch: main
+        defaultBranch: main
         mainBranch: main
         featureBranch: feature/bootstrap
         releaseBranch: release/bootstrap
@@ -125,13 +121,13 @@ spec:
         repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
         pipelineName: ${{ parameters.name }}
         yamlPath: /azure-pipelines.yml
-        branchName: developer
+        branchName: main
     - id: configure-policies
       name: Configurar policies das branches
       action: azure:repo:configure-policies
       input:
         repoUrl: dev.azure.com?organization=argosolutions&project=${{ parameters.azureDevOpsProject }}&repo=${{ parameters.name }}
-        branches: [main, developer]
+        branches: [main]
         minimumApproverCount: 1
         allowRequestorsToApprove: true
         blockLastPusherApproval: false
@@ -148,16 +144,26 @@ spec:
         automaticReviewerRequired: false
         buildValidationPipelineId: '${{ steps["create-pipeline"].output.pipelineId or "" }}'
     - id: gitops
-      name: Preparar argo-gitops
+      name: Preparar poc-argo-gitops
       action: azure:gitops:bootstrap
       input:
-        repoUrl: dev.azure.com?organization=argosolutions&project=Devops&repo=argo-gitops
+        repoUrl: dev.azure.com?organization=argosolutions&project=Root%20Cause&repo=poc-argo-gitops
         serviceName: ${{ parameters.name }}
         tier: ${{ parameters.tier }}
         owner: ${{ parameters.owner }}
-        projectContext: ${{ parameters.system }}
+        projectContext: ${{ steps['resolve-system'].output.system }}
         imageRepository: acrwakandause2hubiszw.azurecr.io/${{ parameters.name }}
         telemetryInjectionAnnotation: instrumentation.opentelemetry.io/inject-dotnet
+        gitAuthorName: ArgoIT Devops
+        gitAuthorEmail: devopsacesso@useargo.com
+    - id: gitops-backend-applications
+      name: Atualizar backend ApplicationSets
+      action: shield:gitops:update-backend-applications
+      input:
+        repoUrl: dev.azure.com?organization=argosolutions&project=Root%20Cause&repo=poc-argo-gitops
+        serviceName: ${{ parameters.name }}
+        tier: ${{ parameters.tier }}
+        namespace: ${{ parameters.azureDevOpsProject }}
         gitAuthorName: ArgoIT Devops
         gitAuthorEmail: devopsacesso@useargo.com
     - id: register
@@ -182,7 +188,7 @@ spec:
         url: ${{ steps.publish.output.repoContentsUrl }}?version=GB${{ steps.bootstrap-branches.output.defaultBranch }}
       - title: Policies da main
         url: ${{ steps.publish.output.repoContentsUrl }}/branches?name=main
-      - title: Abrir values no argo-gitops
+      - title: Abrir values no poc-argo-gitops
         url: ${{ steps.gitops.output.valuesUrl }}
-      - title: Abrir PR no argo-gitops
+      - title: Abrir PR no poc-argo-gitops
         url: ${{ steps.gitops.output.pullRequestUrl }}

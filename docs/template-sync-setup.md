@@ -62,7 +62,7 @@ Para CI/CD automático, adicone no seu Azure Pipeline:
 
 ```yaml
 variables:
-  ARGO_CODE_URL: 'https://dev.azure.com/argosolutions/Devops/_git/argo-code'
+   ARGO_CODE_URL: 'https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-code'
   AZURE_DEVOPS_PAT: $(System.AccessToken)  # ou seu PAT
 ```
 
@@ -76,7 +76,7 @@ shield:
     templating:
       syncRepository:
         enabled: true
-        url: https://dev.azure.com/argosolutions/Devops/_git/argo-code
+            url: https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-code
 ```
 
 ## 📖 Usando no Dia a Dia

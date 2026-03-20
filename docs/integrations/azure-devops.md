@@ -4,9 +4,9 @@
 
 Esta implantacao nao adiciona uma integracao fake ou paralela. O Backstage foi preparado para evoluir para Azure DevOps em cima do Catalog e do Scaffolder, usando o fluxo real:
 
-- repositorio de templates: `https://dev.azure.com/argosolutions/Devops/_git/argo-code`
+- repositorio de templates: `https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-code`
 - base compartilhada de pipeline: `base-argoit/*`
-- repositorio GitOps: `https://dev.azure.com/argosolutions/Devops/_git/argo-gitops`
+- repositorio GitOps: `https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-gitops`
 
 ## Pontos de extensao definidos
 
@@ -20,12 +20,19 @@ Esta implantacao nao adiciona uma integracao fake ou paralela. O Backstage foi p
 - Backend com `@backstage/plugin-scaffolder-backend-module-azure`
 - Action `publish:azure` habilitada no Scaffolder
 - Action `azure:gitops:bootstrap` para criar `gitops/apps/<tier>/<servico>/<ambiente>/values.yaml`
+- Action `shield:gitops:update-backend-applications` para registrar servicos backend em `gitops/application/backend/backend-apps-*.yaml`
 - `azure:gitops:bootstrap` criando branch `feature/<servico>` e abrindo PR para `main`
-- Templates `java-service`, `dotnet-service` e `python-service` com `azure-pipelines.yml` apontando para `argo-code/base-argoit`.
+- Templates `java-service`, `dotnet-service` e `python-service` com `azure-pipelines.yml` consumindo `poc-argo-code/base-argoit` e `base-argoit/variables/global.yml`.
 
 ## Seguranca
 
 PAT nao deve ser salvo em `template.yaml`, `azure-pipelines.yml`, `catalog-info.yaml` ou no repositorio gerado.
+
+O ambiente do pipeline gerado e resolvido pelo `base-argoit/variables/global.yml`, seguindo o branch source:
+
+- `main` -> `prd`
+- `release/*` e `hotfix/*` -> `rc`
+- `feature/*` e `develop` -> `dev`
 
 Use:
 

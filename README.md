@@ -105,13 +105,15 @@ Fluxo atual:
 
 - o Scaffolder renderiza a estrutura usando `fetch:template`
 - o backend usa o modulo oficial `publish:azure` do Backstage para criar o repo no Azure Repos e fazer o push inicial
-- o repo do servico nasce com `developer` como branch padrao e com as branches-semente `main`, `feature/bootstrap` e `release/bootstrap`
+- o repo do servico nasce com `develop` como branch padrao e com as branches-semente `main`, `feature/bootstrap` e `release/bootstrap`
 - os templates de servico executam a action `azure:gitops:bootstrap` para criar `gitops/apps/<tier>/<servico>/{dev,rc,stg,prd}/values.yaml` no repo `argo-gitops`
+- para servicos `backend`, o scaffolder tambem atualiza exatamente os 4 manifests canonicos em `/gitops/application/backend/` com `app` e `namespace` na branch `feature/<servico>`
 - o bootstrap GitOps cria uma branch `feature/<servico>`, faz o commit nessa branch e abre um PR para `main`
 - o fluxo GitOps nao cria `Application`, `ApplicationSet` nem altera `gitops/application/*`; ele escreve apenas os `values.yaml` em `gitops/apps/*`
 - o repo gerado recebe `catalog-info.yaml`, `mkdocs.yml` e TechDocs basico como parte do golden path
+- o repo gerado consome `base-argoit/variables/global.yml` para resolver `dev`, `rc` e `prd` a partir da branch de origem
 - o registro no Catalog usa `catalog:register` apontando para o `catalog-info.yaml` do repositorio publicado
-- para `java-service`, `dotnet-service` e `python-service`, o `azure-pipelines.yml` gerado aponta para `Devops/argo-code` em `base-argoit/*`
+- para `java-service`, `dotnet-service` e `python-service`, o `azure-pipelines.yml` gerado aponta para `Root Cause/poc-argo-code` em `base-argoit/*`
 - os formularios pedem owner, system, lifecycle e projeto Azure DevOps
 - os formularios usam as versoes atuais por padrao: Java 25, .NET 10 e Python 3.14
 - o caminho GitOps esperado fica anotado em `shield.io/gitops-values-path`
@@ -123,6 +125,10 @@ Estrutura GitOps criada por template:
 - `gitops/apps/<tier>/<servico>/rc/values.yaml`
 - `gitops/apps/<tier>/<servico>/stg/values.yaml`
 - `gitops/apps/<tier>/<servico>/prd/values.yaml`
+- `gitops/application/backend/backend-apps-autosync-dev.yaml`
+- `gitops/application/backend/backend-apps-manual-rc.yaml`
+- `gitops/application/backend/backend-apps-manual-stg.yaml`
+- `gitops/application/backend/backend-apps-manual-prd.yaml`
 
 Padrao inicial de `values.yaml`:
 
@@ -179,13 +185,13 @@ O projeto foi preparado para evoluir sem criar integracao fake:
 - anotacao `shield.io/gitops-values-path`
 - templates Java/.NET/Python com `azure-pipelines.yml` apontando para `argo-code/base-argoit`
 - scaffolder publicando em Azure Repos com `publish:azure`
-- scaffolder bootstrapando `argo-gitops` com a action `azure:gitops:bootstrap`
+- scaffolder bootstrapando `poc-argo-gitops` com a action `azure:gitops:bootstrap`
 - bootstrap GitOps abrindo PR automatico a partir de `feature/<servico>`
 
 Repositorios reais usados no fluxo:
 
-- templates de pipeline: `https://dev.azure.com/argosolutions/Devops/_git/argo-code`
-- values GitOps: `https://dev.azure.com/argosolutions/Devops/_git/argo-gitops`
+- templates de pipeline: `https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-code`
+- values GitOps: `https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-gitops`
 
 Onde colocar o PAT:
 

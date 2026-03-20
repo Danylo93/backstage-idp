@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: backend-apps-manual-hmg
+  name: backend-apps-manual-stg
   namespace: argocd
 spec:
   generators:
@@ -11,18 +11,18 @@ spec:
             namespace: sample-team
   template:
     metadata:
-      name: "{{app}}-hmg"
+      name: "{{app}}-stg"
       labels:
-        shield.env: hmg
-        shield.cluster: sokovia
+        shield.env: stg
+        shield.cluster: asgard
     spec:
       project: shield-backend
       source:
-        repoURL: https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+        repoURL: https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-gitops
         targetRevision: main
-        path: "gitops/apps/backend/{{app}}/hmg"
+        path: "gitops/apps/backend/{{app}}/stg"
       destination:
-        server: https://sokovia.cluster.local
+        server: https://asgard.cluster.local
         namespace: "{{namespace}}"
       syncPolicy:
         syncOptions:

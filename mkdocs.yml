@@ -8,6 +8,7 @@ nav:
   - Standards: standards.md
   - Integrations:
       - Azure DevOps: integrations/azure-devops.md
+      - Microsoft SSO: integrations/microsoft-sso.md
       - Argo CD: integrations/argocd.md
       - Terraform: integrations/terraform.md
       - Kubernetes: integrations/kubernetes.md

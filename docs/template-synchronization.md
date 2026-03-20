@@ -23,7 +23,7 @@ Certifique-se de que seu environmente tem:
 
 ```bash
 # Clonar argo-code initially
-export ARGO_CODE_URL="https://dev.azure.com/argosolutions/Devops/_git/argo-code"
+export ARGO_CODE_URL="https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-code"
 export ARGO_CODE_BRANCH="main"
 
 # Para push, você precisa de autenticação Git configurada
@@ -160,7 +160,7 @@ shield:
   templating:
     syncRepository:
       enabled: true
-      url: https://dev.azure.com/argosolutions/Devops/_git/argo-code
+      url: https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-code
       branch: main
       localPath: .argo-code-sync
       templates:

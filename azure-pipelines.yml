@@ -17,7 +17,7 @@ variables:
   nodeVersion: '24.x'
   imageRepository: 'acrwakandause2hubiszw.azurecr.io/shield-platform'
   imageTag: '$(Build.SourceVersion)'
-  gitOpsRepoUrl: 'https://dev.azure.com/argosolutions/Devops/_git/argo-gitops'
+  gitOpsRepoUrl: 'https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-gitops'
   gitOpsValuesRoot: 'gitops/apps/platform/shield-platform'
   techdocsEntityRef: 'default/component/shield-platform'
 
@@ -52,6 +52,42 @@ stages:
           - publish: $(Build.ArtifactStagingDirectory)/sbom.cdx.json
             artifact: sbom
             displayName: Publish SBOM artifact
+
+  - stage: Security
+    displayName: OWASP, SAST and SCA
+    dependsOn: []
+    jobs:
+      - job: baseline
+        displayName: Scan workspace security baseline
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.12'
+            displayName: Use Python for security tooling
+
+          - script: |
+              python -m pip install --upgrade pip
+              python -m pip install "semgrep>=1.90,<2"
+            displayName: Install Semgrep
+
+          - script: |
+              semgrep \
+                --config=p/owasp-top-ten \
+                --error \
+                modules \
+                scripts \
+                templates
+            displayName: Run SAST aligned with OWASP Top 10
+
+          - script: |
+              mkdir -p .tools
+              curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b "$PWD/.tools"
+              "$PWD/.tools/trivy" fs \
+                --exit-code 1 \
+                --severity HIGH,CRITICAL \
+                --scanners vuln,misconfig,secret \
+                .
+            displayName: Run SCA and repository security scan with Trivy
 
   - stage: Build
     displayName: Build Release Assets

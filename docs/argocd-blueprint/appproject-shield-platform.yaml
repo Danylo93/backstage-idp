@@ -6,7 +6,7 @@ metadata:
 spec:
   description: Shield platform workloads in hub cluster
   sourceRepos:
-    - https://dev.azure.com/argosolutions/Devops/_git/argo-gitops
+    - https://dev.azure.com/argosolutions/Root%20Cause/_git/poc-argo-gitops
   destinations:
     - namespace: "*"
       server: "*"
